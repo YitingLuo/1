@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作品集案例：葉子祕境 Yats2Stay 品牌重塑</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet" />
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { 
+              sans: ['"Plus Jakarta Sans"', "system-ui", "sans-serif"],
+              serif: ['"Noto Serif TC"', "serif"]
+            },
+            borderRadius: { bento: "1.75rem", "bento-lg": "2.25rem", "bento-xl": "3rem" },
+          },
+        },
+      };
+    </script>
+    
+    <style>
+        /* 移植主頁的基礎變數與毛玻璃效果 */
+        :root {
+            --page-bg: #050505;
+            --page-text: #F8FAFC;
+            --card-bg: rgba(20, 20, 25, 0.55);
+            --card-border: rgba(255, 255, 255, 0.06);
+            --accent-glow: rgba(168, 85, 247, 0.45);
+            --timeline-dot: #a855f7;
+        }
+        
+        body { 
+            background-color: var(--page-bg); 
+            color: var(--page-text); 
+            scroll-behavior: smooth;
+        }
+
+        .bento-card {
+            border: 1px solid var(--card-border); 
+            background: var(--card-bg);
+            backdrop-filter: blur(24px); 
+            -webkit-backdrop-filter: blur(24px);
+        }
+
+        /* 內容滾動浮現動畫 */
+        .reveal-blur { 
+            opacity: 0; 
+            filter: blur(10px); 
+            transform: translateY(30px); 
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-blur.is-visible { 
+            opacity: 1; 
+            filter: blur(0); 
+            transform: translateY(0); 
+        }
+        
+        .delay-1 { transition-delay: 0.15s; }
+        .delay-2 { transition-delay: 0.3s; }
+        .delay-3 { transition-delay: 0.45s; }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-purple-500/30 relative">
+
+    <div class="fixed inset-0 pointer-events-none opacity-20 z-0" style="background-image: linear-gradient(to right, var(--card-border) 1px, transparent 1px), linear-gradient(to bottom, var(--card-border) 1px, transparent 1px); background-size: 4rem 4rem; mask-image: radial-gradient(circle at center, black, transparent 80%);"></div>
+
+    <div id="image-modal" data-no-toggle class="fixed inset-0 z-[100000] hidden items-center justify-center bg-black/90 backdrop-blur-md opacity-0 transition-opacity duration-300">
+      <div class="relative w-full h-full flex items-center justify-center p-4 sm:p-8">
+        <button id="close-modal" class="absolute top-4 right-4 sm:top-8 sm:right-8 text-white/60 hover:text-white transition-colors p-2 focus:outline-none z-50">
+          <svg class="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+        <img id="modal-img" src="" alt="放大檢視" class="w-auto h-auto max-w-[95vw] max-h-[90vh] object-contain rounded-md shadow-2xl cursor-zoom-out" />
+      </div>
+    </div>
+
+    <style>
+        nav.top-nav { position:fixed; top:1rem; left:50%; transform:translateX(-50%); z-index:200; display:flex; align-items:center; gap:1.5rem; padding:0.55rem 1.4rem; border-radius:999px; border:1px solid rgba(255,255,255,0.08); background:rgba(13,13,26,0.7); backdrop-filter:blur(24px); white-space:nowrap; }
+        nav.top-nav .nav-sep { color:rgba(255,255,255,0.18); }
+        nav.top-nav .nav-link { font-size:0.75rem; color:rgba(255,255,255,0.4); text-decoration:none; transition:color .2s; font-family:'Plus Jakarta Sans',sans-serif; }
+        nav.top-nav .nav-link:hover { color:#fff; }
+        nav.top-nav .nav-current { font-size:0.75rem; font-weight:700; color:#fff; font-family:'Noto Serif TC',serif; }
+    </style>
+    <header>
+        <nav class="top-nav">
+            <a href="作品集.html" class="nav-link">
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:inline;margin-right:4px;vertical-align:middle;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                返回作品集
+            </a>
+            <span class="nav-sep">|</span>
+            <span class="nav-current">專案 01：葉子祕境</span>
+            <span class="nav-sep">|</span>
+            <a href="new.html" class="nav-link">專案 02：平面設計集</a>
+            <span class="nav-sep">|</span>
+            <a href="fuburg-ai-v3.html" class="nav-link">專案 03：LINE AI 客服</a>
+        </nav>
+    </header>
+
+    <main class="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-16">
+        
+        <section class="text-center mb-20 reveal-blur is-visible">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 mb-6 backdrop-blur-md">
+                <div class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></div>
+                <span class="text-[10px] font-black tracking-[0.2em] text-purple-300 uppercase">UI/UX 案例研究</span>
+            </div>
+            <h1 class="text-4xl md:text-6xl font-serif font-black mb-6 drop-shadow-lg">葉子祕境 Yats2Stay</h1>
+            <p class="text-lg md:text-xl max-w-2xl mx-auto text-slate-400 font-light leading-relaxed">
+                將傳統民宿網頁轉化為「奢華森林系」沈浸式體驗，提升訂房轉換率與品牌價值。
+            </p>
+        </section>
+
+        <section class="grid md:grid-cols-3 gap-6 mb-24 reveal-blur">
+            <div class="bento-card p-8 rounded-bento-lg flex flex-col">
+                <span class="text-[10px] text-purple-400 tracking-widest uppercase mb-2">01. 角色</span>
+                <h3 class="text-xl font-bold mb-4 text-white">我的角色</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">捷德運動實習期間獨立完成的 UI/UX 設計專案，涵蓋視覺系統重建、資訊架構梳理、UI Kit 規範建構與高擬真原型製作。</p>
+            </div>
+            <div class="bento-card p-8 rounded-bento-lg flex flex-col delay-1">
+                <span class="text-[10px] text-purple-400 tracking-widest uppercase mb-2">02. 挑戰</span>
+                <h3 class="text-xl font-bold mb-4 text-white">面臨挑戰</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">葉子祕境主打高單價的森林奢華住宿，但舊版網站的視覺像一般民宿——首頁缺乏沈浸式氛圍，房型頁面以純文字條列設施，讓訪客難以感受到價格的合理性，也沒有足夠的動力繼續瀏覽與訂房。</p>
+            </div>
+            <div class="bento-card p-8 rounded-bento-lg flex flex-col delay-2">
+                <span class="text-[10px] text-purple-400 tracking-widest uppercase mb-2">03. 目標</span>
+                <h3 class="text-xl font-bold mb-4 text-white">設計目標</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">讓視覺語言與品牌定位對齊：以沈浸式的「秘境感」取代生硬排版，同時重新梳理選房資訊架構，縮短訪客從到站到決定訂房的決策路徑。</p>
+            </div>
+        </section>
+
+        <section class="mb-24 reveal-blur">
+            <h2 class="text-3xl font-serif font-bold mb-12 text-center text-white">視覺進化對比</h2>
+            
+            <div class="mb-12">
+                <div class="flex items-center gap-4 mb-6">
+                    <span class="text-2xl font-black text-purple-500/50">01</span>
+                    <h3 class="text-xl font-bold text-white">首頁 (Home Page) 體驗重塑</h3>
+                </div>
+                <div class="bento-card p-8 rounded-bento-xl">
+                    <div class="grid md:grid-cols-2 gap-12 items-start">
+                        <div class="space-y-6">
+                            <div class="inline-block px-4 py-2 rounded-full text-xs font-bold bg-slate-800/50 border border-slate-700 text-slate-300 uppercase tracking-wider">
+                                Before - 舊版視覺
+                            </div>
+                            <div class="h-[600px] bg-slate-800 rounded-xl overflow-y-auto border border-white/5 custom-scrollbar">
+                                <img src="screenshot-南投埔里民宿 葉子祕境森林系 Villa _ 首頁.png" alt="舊版首頁" class="w-full h-auto opacity-70 hover:opacity-100 transition-opacity">
+                            </div>
+                            <p class="text-sm text-slate-500 italic">大面積留白缺乏氛圍、排版零碎、難以感受奢華露營的特色。</p>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="inline-block px-4 py-2 rounded-full text-xs font-bold bg-purple-500/20 border border-purple-500/30 text-purple-300 uppercase tracking-wider">
+                                After - 新版設計
+                            </div>
+                            <div class="h-[600px] bg-slate-800 rounded-xl overflow-y-auto border border-purple-500/30 shadow-[0_0_30px_rgba(168,85,247,0.15)] custom-scrollbar">
+                                <img src="首頁   葉子祕境 Yats2Stay - 南投奢華森林系住宿.png" alt="新版首頁" class="w-full h-auto">
+                            </div>
+                            <p class="text-sm text-slate-400 italic">重新設計 Hero Section，以滿版情境照定調高質感的秘境氛圍，並搭配清晰的 CTA (Call to Action) 按鈕，一進站就精準引導使用者查看房型。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reveal-blur">
+                <div class="flex items-center gap-4 mb-6">
+                    <span class="text-2xl font-black text-purple-500/50">02</span>
+                    <h3 class="text-xl font-bold text-white">房型詳情 (Room Details) 資訊架構升級</h3>
+                </div>
+                <div class="bento-card p-8 rounded-bento-xl">
+                    <div class="grid md:grid-cols-2 gap-12 items-start">
+                        <div class="space-y-6">
+                            <div class="inline-block px-4 py-2 rounded-full text-xs font-bold bg-slate-800/50 border border-slate-700 text-slate-300 uppercase tracking-wider">
+                                Before - 舊版視覺
+                            </div>
+                            <div class="h-[600px] bg-slate-800 rounded-xl overflow-y-auto border border-white/5 custom-scrollbar">
+                                <img src="screenshot-葉子房型介紹.png" alt="舊版房型詳情" class="w-full h-auto opacity-70 hover:opacity-100 transition-opacity">
+                            </div>
+                            <p class="text-sm text-slate-500 italic">排版單調缺乏層次，同房型的子房間缺乏明確分類，且設施清單為純文字條列，難以支撐高單價房型的價值感。</p>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="inline-block px-4 py-2 rounded-full text-xs font-bold bg-purple-500/20 border border-purple-500/30 text-purple-300 uppercase tracking-wider">
+                                After - 設計策略
+                            </div>
+                            <div class="h-[600px] bg-slate-800 rounded-xl overflow-y-auto border border-purple-500/30 shadow-[0_0_30px_rgba(168,85,247,0.15)] custom-scrollbar">
+                                <img src="葉子櫻花房1.png" alt="新版房型詳情" class="w-full h-auto">
+                            </div>
+                            <p class="text-sm text-slate-400 italic">導入標籤分類讓使用者直覺切換同房型的不同房間。同時搭配圖文整合的模組化設施面板與 Icon 標籤，並加入懸浮訂房按鈕縮短決策路徑。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="mb-24 reveal-blur">
+            <div class="bento-card p-8 md:p-12 rounded-bento-xl flex flex-col md:flex-row items-center gap-8">
+                
+                <div class="w-full md:w-5/12 space-y-6">
+                    <span class="text-4xl font-serif text-purple-500/30">亮點展示</span>
+                    <h2 class="text-3xl font-serif font-bold text-white">資訊視覺化：園區地圖重繪</h2>
+                    <p class="text-slate-400 leading-relaxed">
+                        為兼顧真實空間的『還原度』與品牌美感，我以 Google Map 實際地形為基底，運用 AI 輔助建構底圖，最終「全手繪」完稿專屬的園區配置圖。這不僅統一了視覺語彙，更提供了精準的空間認知，期望有效降低旅客對於尋路與房型位置的疑慮。
+                    </p>
+                    <p class="text-xs font-bold text-purple-400 animate-pulse mt-4 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                        點擊地圖可放大檢視細節
+                    </p>
+                </div>
+
+                <div class="w-full md:w-7/12 bg-black/50 rounded-2xl p-4 border border-white/5 flex justify-center hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] transition-all duration-500 cursor-zoom-in group">
+                    <img src="Group 188.png" alt="重繪園區地圖" class="w-full max-h-[600px] object-contain drop-shadow-2xl cert-img group-hover:scale-[1.02] transition-transform duration-500">
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-24 reveal-blur">
+            <div class="text-center mb-12">
+                <span class="text-[10px] font-black tracking-[0.3em] text-purple-400 uppercase mb-4 block">Design System</span>
+                <h2 class="text-3xl font-serif font-bold text-white mb-6">系統化設計：UI Kit 規範建構</h2>
+                <p class="text-slate-400 mt-4 max-w-2xl mx-auto text-sm leading-relaxed">
+                    為了支撐多達 7 種房型與繁雜的設施資訊，我避免了逐頁重複繪製，從零建構了完整的 UI Kit。透過統一管理共用元件，確保了專案的視覺一致性與迭代效率。
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- 01. 基礎元件卡片 -->
+                <div class="bento-card p-6 rounded-bento-lg group transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(168,85,247,0.15)]">
+                    <h3 class="text-lg font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">01. 基礎元件 (Elements)</h3>
+                    <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                        定義最基礎的原子級元件，包含所有的房型圖庫、地圖切片與基礎設定。將散落的素材統整，為後續的模組化打下穩固基礎。
+                    </p>
+                    <div class="bg-white/5 rounded-xl overflow-hidden border border-white/5 relative group-hover:border-purple-500/50 transition-colors cursor-zoom-in flex items-center justify-center p-4">
+                        <img src="截圖 2026-04-29 晚上9.02.52.png" alt="基礎元件" class="w-full h-auto max-h-[400px] object-contain cert-img transition-transform duration-500 group-hover:scale-[1.03]">
+                        <div class="absolute bottom-4 right-4 bg-black/60 p-2 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 02. 複合組件卡片 -->
+                <div class="bento-card p-6 rounded-bento-lg group delay-1 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(168,85,247,0.15)]">
+                    <h3 class="text-lg font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">02. 複合組件 (Components)</h3>
+                    <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                        將基礎元件組合成帶有互動邏輯的「地圖輪播卡片」與『「房型詳情變體」，並完整設定 Hover、Active 等操作狀態，確保後續開發的完整性。
+                    </p>
+                    <div class="bg-white/5 rounded-xl overflow-hidden border border-white/5 relative group-hover:border-purple-500/50 transition-colors cursor-zoom-in flex items-center justify-center p-4">
+                        <img src="截圖 2026-04-29 晚上9.02.10.png" alt="複合組件" class="w-full h-auto max-h-[400px] object-contain cert-img transition-transform duration-500 group-hover:scale-[1.03]">
+                        <div class="absolute bottom-4 right-4 bg-black/60 p-2 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 新增：高擬真互動原型 (Prototype) - 橫式影片版 -->
+        <section class="mb-24 reveal-blur">
+            <div class="bento-card p-8 md:p-12 rounded-bento-xl flex flex-col items-center gap-8">
+                
+                <!-- 上方：文字說明 -->
+                <div class="w-full text-center space-y-4 mb-4">
+                    <span class="text-4xl font-serif text-purple-500/30">Prototype</span>
+                    <h2 class="text-3xl font-serif font-bold text-white">高擬真互動原型：訂房須知與規範</h2>
+                    <p class="text-slate-400 leading-relaxed max-w-2xl mx-auto text-sm">
+                        為了解決傳統民宿網站繁雜條文造成的閱讀疲勞，我使用了手風琴式 (Accordion) 的展開收合設計。透過高擬真 Prototype 測試，確保點擊回饋明確、資訊層級清晰，有效降低使用者的認知負荷。
+                    </p>
+                </div>
+
+                <!-- 下方：自動播放的橫式影片容器 -->
+                <div class="w-full max-w-4xl bg-black/60 rounded-2xl p-2 md:p-4 border border-white/5 shadow-[0_0_30px_rgba(168,85,247,0.15)] relative group">
+                    <div class="overflow-hidden rounded-xl bg-slate-900 border border-white/10 relative aspect-video">
+                        <!-- 確認影片 src 路徑 -->
+                        <video autoplay loop muted playsinline class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500">
+                            <source src="螢幕錄影1.mov" type="video/mp4">
+                            您的瀏覽器不支援 HTML5 影片播放。
+                        </video>
+                    </div>
+                    <!-- 裝飾用光暈 -->
+                    <div class="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-transparent blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-500 -z-10"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 新增：專案反思與學習 (完美收尾) -->
+        <section class="mb-24 reveal-blur">
+            <div class="bento-card p-10 md:p-16 rounded-bento-xl border-purple-500/20 bg-purple-500/5 relative overflow-hidden">
+                <div class="relative z-10">
+                    <h2 class="text-3xl font-serif font-bold text-white mb-8">專案反思與總結</h2>
+                    <div class="grid md:grid-cols-2 gap-12">
+                        <div class="space-y-4">
+                            <h4 class="text-purple-400 font-bold uppercase tracking-widest text-sm">專案反思</h4>
+                            <p class="text-slate-300 text-sm leading-relaxed">
+                                這次專案讓我體會到在有限的時程下，必須精準定義核心痛點並做出取捨。我優先將火力集中在『資訊層級』與『視覺氛圍』的重塑，確保核心選房路徑的流暢度，而不是盲目地產出所有畫面。
+                            </p>
+                        </div>
+                        <div class="space-y-4">
+                            <h4 class="text-purple-400 font-bold uppercase tracking-widest text-sm">未來規劃</h4>
+                            <p class="text-slate-300 text-sm leading-relaxed">
+                                因應專案時程，本次優先確保了電腦版網頁的完整度。下一階段，我計畫補齊完整的跨裝置（RWD）設計規範，並針對手機端的『選房流程』進行可用性測試，以確保全平台的體驗一致性。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- 裝飾背景圖案 -->
+                <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-purple-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="py-12 px-6 text-center border-t border-white/10 mt-12 relative z-10">
+        <p class="text-slate-500 text-xs tracking-widest uppercase">© 2026 Yiting Luo 羅亦庭. 版權所有。</p>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        
+        // 1. 滾動浮現動畫 (Scroll Reveal)
+        const reveals = document.querySelectorAll('.reveal-blur');
+        if ('IntersectionObserver' in window) {
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+              }
+            });
+          }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+          
+          reveals.forEach(reveal => observer.observe(reveal));
+        } else {
+          reveals.forEach(reveal => reveal.classList.add('is-visible'));
+        }
+
+        // 2. 圖片點擊放大 (Modal Lightbox)
+        const modal = document.getElementById("image-modal");
+        const modalImg = document.getElementById("modal-img");
+        const closeBtn = document.getElementById("close-modal");
+        const certImages = document.querySelectorAll(".cert-img");
+
+        certImages.forEach(img => {
+          img.addEventListener("click", function() {
+            modalImg.src = this.src; 
+            modal.classList.remove("hidden");
+            setTimeout(() => {
+              modal.classList.remove("opacity-0");
+            }, 10);
+          });
+        });
+
+        function closeModal() {
+          modal.classList.add("opacity-0");
+          setTimeout(() => {
+            modal.classList.add("hidden");
+            modalImg.src = "";
+          }, 300);
+        }
+
+        closeBtn.addEventListener("click", closeModal);
+        modal.addEventListener("click", function(e) {
+          if (e.target === modal || e.target.tagName === "IMG") {
+            closeModal();
+          }
+        });
+
+      });
+    </script>
+</body>
+</html>

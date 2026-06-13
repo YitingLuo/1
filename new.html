@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>平面視覺設計 — 羅亦庭</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Noto+Serif+TC:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080810;
+      --text: #f0eef8;
+      --muted: rgba(240,238,248,0.5);
+      --faint: rgba(240,238,248,0.2);
+
+      /* per-section accent colors */
+      --c01: #9b5de5;   /* 深紫 */
+      --c01-bg: #0e0816;
+      --c02: #06d6a0;   /* 深青綠 */
+      --c02-bg: #060f0e;
+      --c03: #f4820a;   /* 深橘 */
+      --c03-bg: #100900;
+
+      --font-display: 'Noto Serif TC', serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'Space Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* noise overlay */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9998; opacity: 0.4;
+    }
+
+    /* ── NAV ── */
+    nav.top-nav {
+      position: fixed; top: 1rem; left: 50%; transform: translateX(-50%);
+      z-index: 200;
+      display: flex; align-items: center; gap: 1.5rem;
+      padding: 0.55rem 1.4rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(13,13,26,0.7);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      white-space: nowrap;
+    }
+    .nav-sep { color: rgba(255,255,255,0.18); }
+    .nav-link {
+      display: flex; align-items: center; gap: 0.4rem;
+      font-size: 0.75rem; color: rgba(255,255,255,0.4);
+      text-decoration: none; transition: color .2s;
+    }
+    .nav-link:hover { color: #fff; }
+    .nav-current {
+      font-size: 0.75rem; font-weight: 700; color: #fff;
+      font-family: var(--font-mono);
+    }
+
+    /* ── SIDE PROGRESS ── */
+    .side-nav {
+      position: fixed; right: 1.8rem; top: 50%; transform: translateY(-50%);
+      z-index: 99; display: flex; flex-direction: column; gap: 1.6rem;
+      align-items: flex-end;
+    }
+    .side-item {
+      display: flex; align-items: center; gap: 0.6rem; cursor: pointer;
+      text-decoration: none;
+    }
+    .side-label {
+      font-family: var(--font-mono); font-size: 0.5rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--faint);
+      opacity: 0; transform: translateX(6px);
+      transition: opacity .3s, transform .3s, color .3s;
+      white-space: nowrap;
+    }
+    .side-item:hover .side-label,
+    .side-item.active .side-label { opacity: 1; transform: translateX(0); }
+    .side-item.active .side-label { color: var(--text); }
+    .side-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--faint); border: 1.5px solid rgba(255,255,255,0.2);
+      transition: all .4s cubic-bezier(.22,1,.36,1);
+      flex-shrink: 0;
+    }
+    .side-item.active .side-dot {
+      width: 10px; height: 10px;
+      background: var(--text);
+      box-shadow: 0 0 12px rgba(255,255,255,0.5);
+    }
+    .side-item[data-sec="01"].active .side-dot { background: var(--c01); box-shadow: 0 0 14px var(--c01); }
+    .side-item[data-sec="02"].active .side-dot { background: var(--c02); box-shadow: 0 0 14px var(--c02); }
+    .side-item[data-sec="03"].active .side-dot { background: var(--c03); box-shadow: 0 0 14px var(--c03); }
+
+    /* ── HERO (動態質感版) ── */
+    #hero.hero-centered {
+      position: relative; height: 100vh; min-height: 600px;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 0 2.5rem;
+      overflow: hidden;
+      background: var(--bg);
+      text-align: center;
+    }
+
+    /* 背景漂浮光球動畫 */
+    .orb-container {
+      position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1;
+    }
+    .orb {
+      position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.3;
+      animation: floatOrb 12s infinite ease-in-out alternate;
+    }
+    .orb-1 { width: 350px; height: 350px; background: #9b5de5; top: 10%; left: 15%; animation-delay: 0s; }
+    .orb-2 { width: 280px; height: 280px; background: #00f5d4; bottom: 15%; right: 15%; animation-delay: -4s; animation-duration: 15s; }
+    .orb-3 { width: 200px; height: 200px; background: #f15bb5; top: 40%; left: 60%; animation-delay: -7s; animation-duration: 18s; }
+
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(40px, -60px) scale(1.1); }
+    }
+
+    #hero.hero-centered .hero-content {
+      position: relative; z-index: 2; max-width: 800px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    #hero.hero-centered .hero-eyebrow {
+      font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.35em;
+      text-transform: uppercase; color: #a8c0ff; /* 更優雅的淡藍紫 */
+      margin-bottom: 1.5rem;
+      animation: fadeUp .8s .2s both;
+    }
+    
+    /* 字體改用俐落的無襯線體，調整行距 */
+    #hero.hero-centered .hero-title {
+      font-family: 'Noto Sans TC', sans-serif; font-weight: 900;
+      font-size: clamp(3.5rem, 8vw, 6.5rem); line-height: 1.15;
+      letter-spacing: 0.05em; margin-bottom: 1.8rem;
+      color: #ffffff;
+      animation: fadeUp .8s .35s both;
+    }
+    /* 拿掉斜體，改用柔和高質感的漸層色 */
+    #hero.hero-centered .hero-title em {
+      font-style: normal; 
+      background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    
+    #hero.hero-centered .hero-sub {
+      font-size: 1rem; color: rgba(240,238,248,0.6); line-height: 1.8; max-width: 540px;
+      margin-bottom: 3rem;
+      animation: fadeUp .8s .5s both;
+    }
+    
+    /* 質感毛玻璃區塊，取代原本的按鈕造型 */
+    #hero.hero-centered .hero-chips {
+      display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;
+      animation: fadeUp .8s .65s both;
+    }
+    .chip-block {
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px; /* 微圓角矩形，更像排版區塊 */
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      font-family: var(--font-mono); font-size: 0.65rem;
+      letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.75);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    #hero.hero-centered .hero-scroll {
+      position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      animation: fadeUp .8s .9s both; z-index: 2;
+      cursor: default;
+    }
+    .hero-scroll span {
+      font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 0.35em;
+      text-transform: uppercase; color: rgba(240,238,248,0.5);
+    }
+    .scroll-arrow {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      animation: arrowBounce 1.6s ease-in-out infinite;
+    }
+    .scroll-arrow svg { display: block; }
+    @keyframes arrowBounce {
+      0%, 100% { transform: translateY(0); opacity: 0.5; }
+      50%       { transform: translateY(8px); opacity: 1; }
+    }
+
+    /* ── SECTION BASE ── */
+    .project-section {
+      position: relative; padding: 7rem 2.5rem;
+      transition: background .6s ease;
+    }
+    .project-section::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      opacity: 1;
+    }
+    .project-section::before { opacity: 1; }
+
+    #p01 { background: var(--c01-bg); }
+    #p01::before {
+      background: radial-gradient(ellipse 60% 50% at 80% 20%, rgba(155,93,229,0.07), transparent);
+    }
+    #p02 { background: var(--c02-bg); }
+    #p02::before {
+      background: radial-gradient(ellipse 60% 50% at 20% 60%, rgba(6,214,160,0.06), transparent);
+    }
+    #p03 { background: var(--c03-bg); }
+    #p03::before {
+      background: radial-gradient(ellipse 60% 50% at 70% 30%, rgba(244,130,10,0.06), transparent);
+    }
+
+    .sec-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+
+    /* section divider line */
+    .sec-divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
+    }
+
+    /* ── SECTION HEADER ── */
+    .sec-header { margin-bottom: 1.75rem; }
+    .sec-num {
+      font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.35em;
+      text-transform: uppercase; margin-bottom: 0.75rem;
+    }
+    .sec-title {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.1;
+      margin-bottom: 0.6rem;
+    }
+    .sec-sub { font-size: 0.85rem; color: var(--muted); }
+    .sec-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+    .tag {
+      padding: 0.18rem 0.65rem; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      font-family: var(--font-mono); font-size: 0.55rem;
+      letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted);
+    }
+
+    /* ── REVEAL ANIMATIONS ── */
+    .reveal {
+      opacity: 0; transform: translateY(40px);
+      transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1);
+    }
+    .visible { opacity: 1; transform: translateY(0); }
+    .r1 { transition-delay: 0s; }
+    .r2 { transition-delay: .12s; }
+    .r3 { transition-delay: .24s; }
+    .r4 { transition-delay: .36s; }
+    .r5 { transition-delay: .48s; }
+
+    /* sec-header, color-row, desc-card 預設隱藏等待 reveal */
+    .sec-header,
+    .color-row,
+    .desc-card,
+    .grid-2-custom,
+    .care-layout,
+    .anno-bubble {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity .85s cubic-bezier(.16,1,.3,1), transform .85s cubic-bezier(.16,1,.3,1);
+    }
+    .sec-header { transition-delay: 0s; }
+    .color-row  { transition-delay: .1s; }
+    .desc-card  { transition-delay: .18s; }
+    .grid-2-custom { transition-delay: .22s; }
+    .care-layout   { transition-delay: .22s; }
+    .anno-bubble   { transition-delay: .28s; }
+
+    .scroll-visible {
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+    }
+
+    /* ── GLASS CARD ── */
+    .glass {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(16px);
+      border-radius: 1.25rem; overflow: hidden;
+    }
+
+    /* ── IMAGE CONTAINERS ── */
+    .img-cover {
+      display: block; width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform .7s cubic-bezier(.22,1,.36,1);
+    }
+    .img-wrapper {
+      border-radius: 1.25rem; overflow: hidden;
+      position: relative;
+    }
+    .img-wrapper:hover .img-cover { transform: scale(1.04); }
+    .img-overlay {
+      position: absolute; inset: 0;
+      background: transparent; /* 確認圖片底部不會有漸層黑底 */
+      opacity: 0; transition: opacity .4s;
+      display: flex; align-items: flex-end; padding: 1rem;
+    }
+    .img-wrapper:hover .img-overlay { opacity: 1; }
+    .overlay-label {
+      font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: rgba(255,255,255,0.85);
+    }
+
+    /* ── COLOR DOTS ── */
+    .color-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2rem; }
+    .cdot {
+      width: 0.8rem; height: 0.8rem; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.1);
+    }
+    .color-label { font-size: 0.72rem; color: var(--muted); margin-left: 0.3rem; }
+
+    /* ── SECTION 02 ANNOTATION LAYOUT ── */
+    .care-layout {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1.6fr;
+      gap: 2rem;
+      align-items: start;
+      min-height: 620px;
+      overflow: visible;
+    }
+
+    /* Left annotation panel */
+    .care-annotations {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding-right: 1rem;
+      padding-top: 4rem;
+      z-index: 5;
+    }
+
+    /* Handwritten-style annotation bubble */
+    .anno-bubble {
+      position: relative;
+      background: rgba(6,214,160,0.07);
+      border: 1.5px solid rgba(6,214,160,0.25);
+      border-radius: 1rem;
+      padding: 1rem 1.25rem;
+      font-size: 0.78rem;
+      color: rgba(240,238,248,0.75);
+      line-height: 1.7;
+    }
+    .anno-bubble strong { color: #06d6a0; font-weight: 600; }
+    .anno-bubble .anno-label {
+      font-family: var(--font-mono);
+      font-size: 0.48rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #06d6a0;
+      display: block;
+      margin-bottom: 0.6rem;
+    }
+
+    /* SVG arrow connector */
+    .anno-arrow {
+      display: block;
+      overflow: visible;
+    }
+
+    /* Color palette as annotation badges */
+    .palette-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-top: 0;
+    }
+    .palette-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .palette-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 999px;
+      padding: 0.35rem 0.8rem 0.35rem 0.5rem;
+    }
+    .palette-dots {
+      display: flex;
+      gap: 3px;
+    }
+    .palette-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+    }
+    .palette-badge-label {
+      font-family: var(--font-mono);
+      font-size: 0.5rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* Right: image area with annotations floating on top */
+    .care-visual {
+      position: relative;
+    }
+
+    /* ── Strip hover & scroll hint ── */
+    #care-wrap { transition: filter 0.25s ease; }
+    #care-wrap:hover { filter: brightness(1.1) saturate(1.1); }
+    #care-wrap:active { cursor: grabbing !important; }
+    .strip-hint {
+      position: absolute;
+      bottom: -1.8rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      pointer-events: none;
+      white-space: nowrap;
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.15em;
+      color: rgba(6,214,160,0.55);
+      opacity: 0.45;
+      transition: opacity 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .care-visual:hover .strip-hint { opacity: 1; }
+
+    /* Floating annotation tag on image */
+    .floating-anno {
+      position: absolute;
+      z-index: 10;
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      pointer-events: none;
+    }
+
+    .floating-anno-text {
+      background: rgba(6,214,160,0.12);
+      border: 1.5px solid rgba(6,214,160,0.4);
+      border-radius: 0.6rem;
+      padding: 0.4rem 0.75rem;
+      font-family: 'Noto Sans TC', sans-serif;
+      font-size: 0.65rem;
+      color: #06d6a0;
+      line-height: 1.5;
+      white-space: nowrap;
+      backdrop-filter: blur(8px);
+    }
+
+    /* Curved SVG arrows for floating annotations */
+    .anno-svg-arrow {
+      position: absolute;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    /* ── PHONE MOCKUP ── */
+    .phone-wrap {
+      position: relative; border-radius: 2.5rem;
+      border: 2px solid rgba(255,255,255,0.12);
+      background: #000; overflow: hidden;
+    }
+    .phone-notch {
+      position: absolute; top: 0.6rem; left: 50%; transform: translateX(-50%);
+      width: 52px; height: 8px; background: #000; border-radius: 999px; z-index: 10;
+    }
+    .phone-status {
+      background: #000; padding: 1.7rem 0.7rem 0.4rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .phone-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; }
+    .phone-avatar {
+      width: 1.6rem; height: 1.6rem; border-radius: 50%; overflow: hidden;
+      border: 1.5px solid rgba(255,255,255,0.2); flex-shrink: 0;
+    }
+    .phone-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .phone-name { font-size: 0.55rem; font-weight: 600; color: #fff; letter-spacing: 0.05em; }
+    .phone-stats { display: flex; gap: 1rem; }
+    .phone-stat { text-align: center; }
+    .phone-stat-n { font-size: 0.6rem; font-weight: 700; color: #fff; display: block; }
+    .phone-stat-l { font-size: 0.42rem; color: rgba(255,255,255,0.45); }
+
+    /* carousel */
+    .phone-carousel { overflow: hidden; }
+    .carousel-track { display: flex; transition: transform .5s cubic-bezier(.22,1,.36,1); }
+    .carousel-slide { min-width: 100%; aspect-ratio: 1; flex-shrink: 0; }
+    .carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .carousel-dots {
+      background: #000; display: flex; justify-content: center;
+      gap: 5px; padding: 0.5rem;
+    }
+    .cdot-small {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      transition: all .3s; cursor: pointer;
+    }
+    .cdot-small.active { background: #fff; transform: scale(1.4); }
+
+    /* ── GRID LAYOUTS ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; }
+    .grid-5-3 { display: grid; grid-template-columns: 2fr 3fr; gap: 1.5rem; align-items: start; }
+    .grid-3-2 { display: grid; grid-template-columns: 3fr 2fr; gap: 1.5rem; align-items: start; }
+    @media (max-width: 768px) {
+      .grid-2, .grid-3, .grid-5-3, .grid-3-2 { grid-template-columns: 1fr; }
+    }
+
+    /* ── DESC CARD ── */
+    .desc-card {
+      padding: 2rem 2.25rem; border-radius: 1.25rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+    .desc-card p { font-size: 0.88rem; color: var(--muted); line-height: 2.1; letter-spacing: 0.01em; }
+    .desc-card strong { color: var(--text); font-weight: 500; }
+    .desc-label {
+      font-family: var(--font-mono); font-size: 0.52rem; letter-spacing: 0.28em;
+      text-transform: uppercase; margin-bottom: 1rem; display: block;
+    }
+
+   /* ── 01 全新排版與六宮格修正 ── */
+    /* 穩定雙欄佈局 */
+    .grid-2-custom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+    .left-col { display: flex; flex-direction: column; }
+    .right-col { display: flex; flex-direction: column; }
+    
+    @media (max-width: 850px) {
+      .grid-2-custom { grid-template-columns: 1fr; }
+    }
+
+    /* 真正無縫拼接的六宮格邏輯 (3直列 x 2橫列) */
+    .puzzle-grid {
+      display: grid; 
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px; /* IG 的白色或深色細縫 */
+      border-radius: 0.5rem; 
+      overflow: hidden;
+    }
+    .puzzle-cell {
+      position: relative; 
+      aspect-ratio: 1; /* 保持每格是正方形 */
+      overflow: hidden;
+    }
+    /* 讓圖片放大到足夠涵蓋 3x2 的格子，然後絕對定位 */
+    .puzzle-cell img {
+      position: absolute;
+      width: 300%;  /* 因為有 3 欄，所以寬度要放大 3 倍 */
+      height: 200%; /* 因為有 2 列，所以高度要放大 2 倍 */
+      max-width: none; 
+      object-fit: cover;
+    }
+    
+    /* 透過定位來切割同一張圖片，營造拼圖效果 */
+    .p-1 img { top: 0; left: 0; }
+    .p-2 img { top: 0; left: -100%; }
+    .p-3 img { top: 0; left: -200%; }
+    .p-4 img { top: -100%; left: 0; }
+    .p-5 img { top: -100%; left: -100%; }
+    .p-6 img { top: -100%; left: -200%; }
+
+    /* ── 02 specific ── */
+    .carousel-big { position: relative; border-radius: 1.25rem; overflow: hidden; }
+    .carousel-big-track { display: flex; transition: transform .6s cubic-bezier(.22,1,.36,1); }
+    .carousel-big-slide { min-width: 100%; }
+    .carousel-big-slide img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+    .carousel-nav {
+      position: absolute; bottom: 1rem; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 6px;
+    }
+    .carousel-nav-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.3); cursor: pointer; transition: all .3s;
+    }
+    .carousel-nav-dot.active { background: #fff; width: 18px; border-radius: 3px; }
+    .prev-btn, .next-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 2rem; height: 2rem; border-radius: 50%;
+      background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: white; font-size: 0.8rem; transition: all .2s;
+      z-index: 5;
+    }
+    .prev-btn { left: 0.75rem; }
+    .next-btn { right: 0.75rem; }
+    .prev-btn:hover, .next-btn:hover { background: rgba(0,0,0,0.8); }
+
+    /* ── 03 specific ── */
+    .twelve-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 3px; border-radius: 1rem; overflow: hidden;
+    }
+    .twelve-cell { aspect-ratio: 1; overflow: hidden; }
+    .twelve-cell img {
+      width: 300%; height: 100%; object-fit: cover; display: block;
+      transition: transform .5s cubic-bezier(.22,1,.36,1);
+    }
+    .twelve-cell:hover img { transform: scale(1.08); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 4rem 2.5rem; text-align: center;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    .footer-name {
+      font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--faint); margin-bottom: 1.5rem;
+    }
+
+    /* ── KEYFRAMES ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; }
+      50%       { opacity: 0.8; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="top-nav">
+    <a href="作品集.html" class="nav-link">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+      返回作品集
+    </a>
+    <span class="nav-sep">|</span>
+    <a href="葉子秘境.html" class="nav-link">專案 01：葉子祕境</a>
+    <span class="nav-sep">|</span>
+    <span class="nav-current">專案 02：平面設計集</span>
+    <span class="nav-sep">|</span>
+    <a href="fuburg-ai-v3.html" class="nav-link">專案 03：LINE AI 客服</a>
+  </nav>
+
+  <!-- SIDE PROGRESS -->
+  <nav class="side-nav" aria-label="章節導覽">
+    <a href="#p01" class="side-item" data-sec="01">
+      <span class="side-label">01 心理之夜</span>
+      <span class="side-dot"></span>
+    </a>
+    <a href="#p02" class="side-item" data-sec="02">
+      <span class="side-label">02 關懷活動</span>
+      <span class="side-dot"></span>
+    </a>
+    <a href="#p03" class="side-item" data-sec="03">
+      <span class="side-label">03 小運</span>
+      <span class="side-dot"></span>
+    </a>
+  </nav>
+
+ <!-- ═══ HERO (動態質感升級版) ═══ -->
+ <section id="hero" class="hero-centered">
+    <!-- 背景浮動物件 -->
+    <div class="orb-container">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <div class="hero-content">
+      <p class="hero-eyebrow">Portfolio — Graphic & Visual Design</p>
+      
+      <!-- 強制換行，排版更穩定 -->
+      <h1 class="hero-title">
+        平面<em>視覺</em><br/>設計作品
+      </h1>
+      
+      <p class="hero-sub">
+        從海報視覺到社群排版，我喜歡挖掘不同主題的靈魂元素並加入趣味，<br/>
+        讓平面設計不再只是單向的資訊輸出。
+      </p>
+      
+      <!-- 改為質感區塊 -->
+      <div class="hero-chips">
+        <span class="chip-block">Canva</span>
+        <span class="chip-block">Figma</span>
+        <span class="chip-block">Sketchbook</span>
+        <span class="chip-block">Layering</span>
+        <span class="chip-block">IG 社群設計</span>
+      </div>
+    </div>
+
+    <div class="hero-scroll">
+      <span>Scroll</span>
+      <div class="scroll-arrow">
+        <svg width="20" height="12" viewBox="0 0 20 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 1L10 10L19 1" stroke="rgba(240,238,248,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <svg width="20" height="12" viewBox="0 0 20 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 1L10 10L19 1" stroke="rgba(240,238,248,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 01 心理之夜 ═══ -->
+  <section class="project-section" id="p01">
+    <div class="sec-inner">
+
+      <div class="sec-header">
+        <p class="sec-num" style="color:var(--c01);">01 / 03</p>
+        <h2 class="sec-title">2024 心理之夜</h2>
+        <p class="sec-sub">《星球歷險記》— 暗黑科幻年度活動視覺</p>
+        <div class="sec-tags">
+          <span class="tag">Sketchbook</span><span class="tag">Canva</span>
+          <span class="tag">Figma</span><span class="tag">Layering</span>
+        </div>
+      </div>
+
+      <div class="color-row">
+        <span class="cdot" style="background:#1e1b4b;"></span>
+        <span class="cdot" style="background:#4f46e5;"></span>
+        <span class="cdot" style="background:#c084fc;"></span>
+        <span class="cdot" style="background:#f472b6;"></span>
+        <span class="cdot" style="background:#f97316;"></span>
+        <span class="color-label">宇宙深邃 × 霓虹光暈</span>
+      </div>
+
+     <!-- 全新雙欄便當盒 (防裁切 + 整合識別卡版) -->
+     <div class="grid-2-custom">
+
+        <!-- 🟣 左欄：主視覺海報 -->
+        <div class="left-col">
+          <div class="img-wrapper" style="aspect-ratio:3/4; width: 100%; height: 100%; border-radius: 1.25rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <img class="img-cover"
+              src="心理之夜海報.png"
+              alt="心球歷險記主海報"
+              onerror="this.parentElement.style.background='rgba(155,93,229,0.12)'" />
+            <div class="img-overlay">
+              <span class="overlay-label">主視覺海報 — 心球歷險記</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🟣 右欄：設計概念 + 便當盒排版 -->
+        <div class="right-col" style="display: flex; flex-direction: column; gap: 1.5rem; height: 100%;">
+          
+          <!-- 1. 頂部：設計概念 -->
+          <div class="desc-card">
+            <span class="desc-label" style="color:var(--c01);">設計概念</span>
+            <p style="margin-bottom: 0;">年度主題《星球歷險記》，定調<strong>「暗黑科幻」</strong>視覺風格。運用高對比霓虹色調與太空元素，在社群版面上營造神秘且沉浸的宇宙氛圍。</p>
+          </div>
+
+          <!-- 2. 底部：內嵌一個 1:1 的小雙欄 -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: stretch; flex-grow: 1;">
+            
+            <!-- 🍱 便當盒左側：完整手機 Mockup (絕對不切圖) -->
+            <div style="display: flex; justify-content: center; align-items: center; padding: 0.5rem;">
+              <!-- 使用 contain 確保比例完整，加入 drop-shadow 讓手機立體浮現 -->
+              <img src="心理之夜手機mock up.png" alt="IG 社群排版" 
+                style="width: 100%; height: auto; max-height: 100%; object-fit: contain; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.4)); transition: transform .4s ease;"
+                onmouseover="this.style.transform='scale(1.03)'"
+                onmouseout="this.style.transform='scale(1)'"
+                onerror="this.style.background='rgba(155,93,229,0.1)'; this.style.borderRadius='1.5rem';" />
+            </div>
+
+            <!-- 🍱 便當盒右側：整合式 IG 帳號資訊卡 (頭貼+文字合為一體) -->
+            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(255,255,255,0.02); padding: 2rem 1.25rem; border-radius: 1.25rem; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(8px); text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
+              
+              <!-- 頭貼 (正方形，加入微微的白邊和圓角，像精緻的 LOGO) -->
+              <div style="width: 110px; aspect-ratio: 1; border-radius: 1.2rem; box-shadow: 0 8px 20px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); overflow: hidden; margin-bottom: 1.5rem;">
+                <img src="未命名 162.png" alt="心理之夜 IG 頭貼" style="width: 100%; height: 100%; object-fit: cover;"
+                  onerror="this.parentElement.style.background='rgba(155,93,229,0.15)'" />
+              </div>
+              
+              <!-- 帳號文字資訊 -->
+              <h3 style="font-family: var(--font-display); font-size: 1.2rem; letter-spacing: 0.05em; margin-bottom: 0.4rem; color: #fff;">@psynight2023</h3>
+              <p style="font-size: 0.75rem; color: var(--muted); line-height: 1.6; margin-bottom: 0;">中原心理系 心理之夜<br/>社群視覺延展</p>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ 02 關懷活動 ═══ -->
+  <section class="project-section" id="p02">
+    <div class="sec-inner">
+
+      <div class="sec-header">
+        <p class="sec-num" style="color:var(--c02);">02 / 03</p>
+        <h2 class="sec-title">關懷活動視覺設計</h2>
+        <p class="sec-sub">心理系服務學習活動 — 淨灘 × 育幼院招工</p>
+        <div class="sec-tags">
+          <span class="tag">Canva</span><span class="tag">Figma</span>
+        </div>
+      </div>
+
+      <!-- 主佈局：左側標注 / 右側視覺 -->
+      <div class="care-layout">
+
+        <!-- ── 左側：手寫標注風 ── -->
+        <div class="care-annotations">
+
+          <!-- 設計方向說明泡泡 -->
+          <div class="anno-bubble">
+            <span class="anno-label">設計方向</span>
+            推廣心理系服務學習活動，提升學生參與意願。<br/>
+            針對<strong>不同活動性質</strong>設定視覺基調，<br/>
+            透過高親和力的視覺語言傳遞活動價值。
+          </div>
+
+          <!-- 手寫箭頭 SVG：拉長往右下指，配合手機變大後的貼文位置 -->
+          <svg class="anno-arrow" width="260" height="72" viewBox="0 0 260 72" fill="none" style="margin-left:40px;margin-top:-6px;margin-bottom:-6px;">
+            <path d="M 10 14 C 80 10, 180 58, 248 44" stroke="rgba(6,214,160,0.5)" stroke-width="1.5" stroke-dasharray="4 3" fill="none"/>
+            <polygon points="248,36 258,44 244,50" fill="rgba(6,214,160,0.5)"/>
+          </svg>
+
+          <!-- 配色區：兩個 badge 同一排 -->
+          <div style="display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;">
+
+            <!-- 淨灘 badge -->
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+              <div class="palette-badge">
+                <div class="palette-dots">
+                  <span class="palette-dot" style="background:#38bdf8;"></span>
+                  <span class="palette-dot" style="background:#06b6d4;"></span>
+                  <span class="palette-dot" style="background:#34d399;"></span>
+                </div>
+                <span class="palette-badge-label" style="font-size:0.72rem;">淨灘</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.35rem;">
+                <svg width="22" height="14" viewBox="0 0 22 14" fill="none">
+                  <path d="M2 7 C 8 3, 12 10, 20 7" stroke="rgba(56,189,248,0.6)" stroke-width="1.4" fill="none"/>
+                  <polygon points="20,3 22,7 18,9" fill="rgba(56,189,248,0.6)"/>
+                </svg>
+                <span style="font-size:0.72rem;font-family:var(--font-mono);color:rgba(56,189,248,0.8);letter-spacing:0.05em;">海洋清爽色</span>
+              </div>
+            </div>
+
+            <!-- 育幼院 badge -->
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+              <div class="palette-badge">
+                <div class="palette-dots">
+                  <span class="palette-dot" style="background:#fb923c;"></span>
+                  <span class="palette-dot" style="background:#fbbf24;"></span>
+                  <span class="palette-dot" style="background:#f9a8d4;"></span>
+                </div>
+                <span class="palette-badge-label" style="font-size:0.72rem;">育幼院</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.35rem;">
+                <svg width="22" height="14" viewBox="0 0 22 14" fill="none">
+                  <path d="M2 5 C 8 2, 13 12, 20 8" stroke="rgba(251,146,60,0.6)" stroke-width="1.4" fill="none"/>
+                  <polygon points="20,4 22,8 18,10" fill="rgba(251,146,60,0.6)"/>
+                </svg>
+                <span style="font-size:0.72rem;font-family:var(--font-mono);color:rgba(251,146,60,0.8);letter-spacing:0.05em;">暖色溫馨系</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 底部標注：工具 -->
+          <div style="margin-top:0.25rem;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
+                <path d="M6 1 L6.8 4.5 L10 4.5 L7.5 6.5 L8.5 10 L6 8 L3.5 10 L4.5 6.5 L2 4.5 L5.2 4.5 Z" fill="rgba(6,214,160,0.7)"/>
+              </svg>
+              <span style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:rgba(6,214,160,0.75);">Tools: Canva, Figma</span>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ── 右側：手機 Mockup + 貼文條穿出兩側 ── -->
+        <div class="care-visual" style="position:relative;display:flex;justify-content:center;align-items:flex-start;margin-top:-5rem;">
+
+          <!-- 外層容器：overflow visible 讓貼文條穿出去 -->
+          <div style="position:relative;display:inline-block;">
+
+            <!-- 貼文條：絕對定位，左右各延伸 200px 超出手機 -->
+            <div id="care-wrap" style="
+              position:absolute;
+              left:-200px; right:-200px;
+              top:29%; height:46%;
+              z-index:2; overflow:hidden; cursor:grab;
+            ">
+              <div id="care-track" style="display:flex;height:100%;will-change:transform;">
+                <img src="Group 1430101622.png" style="height:100%;width:auto;flex-shrink:0;display:block;" onerror="this.style.background='rgba(6,214,160,0.1)';this.style.width='450px';" />
+                <img src="Group 1430101622.png" style="height:100%;width:auto;flex-shrink:0;display:block;" onerror="this.style.background='rgba(6,214,160,0.08)';this.style.width='450px';" />
+                <img src="Group 1430101622.png" style="height:100%;width:auto;flex-shrink:0;display:block;" onerror="this.style.background='rgba(6,214,160,0.1)';this.style.width='450px';" />
+              </div>
+              <!-- 左右漸層遮罩 -->
+              <div style="position:absolute;left:0;top:0;bottom:0;width:205px;background:linear-gradient(to right,var(--c02-bg) 0%,transparent 100%);pointer-events:none;z-index:5;"></div>
+              <div style="position:absolute;right:0;top:0;bottom:0;width:205px;background:linear-gradient(to left,var(--c02-bg) 0%,transparent 100%);pointer-events:none;z-index:5;"></div>
+            </div>
+
+            <!-- 手機圖（在貼文條上層） -->
+            <img id="phone-img" src="關懷手機mockup.png" alt="手機框"
+              style="height:680px;width:auto;display:block;position:relative;z-index:3;pointer-events:none;filter:drop-shadow(0 24px 56px rgba(0,0,0,0.75));" />
+
+            <!-- 捲動提示 -->
+            <div class="strip-hint">
+              <svg width="28" height="10" viewBox="0 0 28 10" fill="none">
+                <path d="M1 5 L8 2 M1 5 L8 8" stroke="rgba(6,214,160,0.7)" stroke-width="1.2" stroke-linecap="round"/>
+                <line x1="1" y1="5" x2="27" y2="5" stroke="rgba(6,214,160,0.4)" stroke-width="1" stroke-dasharray="3 2"/>
+                <path d="M27 5 L20 2 M27 5 L20 8" stroke="rgba(6,214,160,0.7)" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              拖曳滑動貼文
+              <svg width="28" height="10" viewBox="0 0 28 10" fill="none">
+                <path d="M1 5 L8 2 M1 5 L8 8" stroke="rgba(6,214,160,0.7)" stroke-width="1.2" stroke-linecap="round"/>
+                <line x1="1" y1="5" x2="27" y2="5" stroke="rgba(6,214,160,0.4)" stroke-width="1" stroke-dasharray="3 2"/>
+                <path d="M27 5 L20 2 M27 5 L20 8" stroke="rgba(6,214,160,0.7)" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <!-- 浮動標注：右上角 → 育幼院色系 -->
+            <div style="position:absolute;top:18%;right:-9rem;z-index:10;pointer-events:none;">
+              <div class="floating-anno-text" style="border-color:rgba(251,146,60,0.45);background:rgba(251,146,60,0.1);color:#fbbf24;">
+                招工運用暖色系<br/>營造溫馨氛圍
+              </div>
+              <svg style="position:absolute;left:-52px;top:14px;" width="56" height="28" viewBox="0 0 56 28" fill="none">
+                <path d="M54 14 C 40 12, 20 22, 4 16" stroke="rgba(251,191,36,0.5)" stroke-width="1.4" stroke-dasharray="3 2" fill="none"/>
+                <polygon points="4,10 2,16 8,18" fill="rgba(251,191,36,0.5)"/>
+              </svg>
+            </div>
+
+            <!-- 浮動標注：左下角 → 淨灘色系，往下移配合大手機 -->
+            <div style="position:absolute;bottom:14%;left:-9.5rem;z-index:10;pointer-events:none;">
+              <div class="floating-anno-text" style="border-color:rgba(6,214,160,0.4);background:rgba(6,214,160,0.08);color:#34d399;">
+                淨灘採用清爽<br/>海洋色調
+              </div>
+              <svg style="position:absolute;right:-52px;top:12px;" width="56" height="30" viewBox="0 0 56 30" fill="none">
+                <path d="M2 14 C 18 10, 36 24, 52 16" stroke="rgba(52,211,153,0.5)" stroke-width="1.4" stroke-dasharray="3 2" fill="none"/>
+                <polygon points="52,10 54,16 48,18" fill="rgba(52,211,153,0.5)"/>
+              </svg>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- end care-layout -->
+
+      <script>
+        (function(){
+          const wrap  = document.getElementById('care-wrap');
+          const track = document.getElementById('care-track');
+          if(!wrap||!track) return;
+
+          let offset=0, dragging=false, startX=0, startOff=0, lastX=0, lastT=0, vel=0, raf;
+
+          function getSingleW(){
+            const img = track.querySelector('img');
+            return img ? (img.getBoundingClientRect().width || 400) : 400;
+          }
+          function setOffset(x){
+            const sw = getSingleW();
+            offset = ((x % sw) - sw) % sw;
+            track.style.transform = `translateX(${offset}px)`;
+          }
+          function onDown(cx){ dragging=true; startX=cx; startOff=offset; lastX=cx; lastT=Date.now(); vel=0; cancelAnimationFrame(raf); wrap.style.cursor='grabbing'; }
+          function onMove(cx){ if(!dragging)return; const now=Date.now(),dt=now-lastT||1; vel=(cx-lastX)/dt; lastX=cx; lastT=now; setOffset(startOff+(cx-startX)); }
+          function onUp(){ if(!dragging)return; dragging=false; wrap.style.cursor='grab'; let v=vel*14; (function g(){ if(Math.abs(v)<0.3)return; setOffset(offset+v); v*=0.92; raf=requestAnimationFrame(g); })(); }
+
+          wrap.addEventListener('mousedown', e=>{ onDown(e.clientX); e.preventDefault(); });
+          window.addEventListener('mousemove', e=>onMove(e.clientX));
+          window.addEventListener('mouseup', onUp);
+          wrap.addEventListener('touchstart', e=>onDown(e.touches[0].clientX),{passive:true});
+          wrap.addEventListener('touchmove',  e=>onMove(e.touches[0].clientX),{passive:true});
+          wrap.addEventListener('touchend', onUp,{passive:true});
+
+          // 觸控板兩指橫滑
+          wrap.addEventListener('wheel', e=>{
+            if(Math.abs(e.deltaX) < Math.abs(e.deltaY)*0.3) return; // 主要是垂直滾動就不攔
+            e.preventDefault();
+            cancelAnimationFrame(raf);
+            setOffset(offset - e.deltaX);
+            // 讓它滑行收尾
+            let v = -e.deltaX * 0.4;
+            (function g(){ if(Math.abs(v)<0.2)return; setOffset(offset+v); v*=0.88; raf=requestAnimationFrame(g); })();
+          }, {passive:false});
+        })();
+      </script>
+
+    </div>
+  </section>
+
+  <div class="sec-divider"></div>
+
+  <!-- ═══ 03 小運 ═══ -->
+  <section class="project-section" id="p03">
+    <div class="sec-inner">
+
+      <div class="sec-header">
+        <p class="sec-num" style="color:var(--c03);">03 / 03</p>
+        <h2 class="sec-title">2023 心理系小運</h2>
+        <p class="sec-sub">Adventure Time × Avengers — IG 12 宮格英雄冒險地圖</p>
+        <div class="sec-tags">
+          <span class="tag">Sketchbook</span><span class="tag">Canva</span><span class="tag">Figma</span>
+        </div>
+      </div>
+
+      <div class="color-row">
+        <span class="cdot" style="background:#dc2626;"></span>
+        <span class="cdot" style="background:#f97316;"></span>
+        <span class="cdot" style="background:#eab308;"></span>
+        <span class="cdot" style="background:#22c55e;"></span>
+        <span class="cdot" style="background:#3b82f6;"></span>
+        <span class="cdot" style="background:#a855f7;"></span>
+        <span class="color-label">高飽和 × 全手繪美式卡通</span>
+      </div>
+
+      <!-- 主佈局：左側資訊 / 右側12宮格 -->
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:2rem;align-items:center;">
+
+        <!-- 左：說明卡 + 頭貼&截圖並排 -->
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+
+          <div class="desc-card">
+            <span class="desc-label" style="color:var(--c03);">設計概念</span>
+            <p>
+              巧妙融合《探險活寶》與《復仇者聯盟》英雄元素，定調<strong>「熱血冒險」</strong>競技主題。<br/><br/>
+              運用高飽和度色彩與美式卡通線條，<strong>全手繪</strong>設計專屬角色。IG 12 宮格拼貼成完整冒險地圖，強化團隊歸屬感。
+            </p>
+          </div>
+
+          <!-- 頭貼 + IG截圖 並排 -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;align-items:start;">
+            <div>
+              <span class="desc-label" style="color:var(--faint);font-family:var(--font-mono);font-size:0.5rem;letter-spacing:0.25em;text-transform:uppercase;display:block;margin-bottom:0.5rem;">IG 頭貼 × LOGO</span>
+              <div class="img-wrapper" style="aspect-ratio:1;">
+                <img class="img-cover" src="未命名3 1.png" alt="Adventure Time PSY 頭貼"
+                  onerror="this.parentElement.style.background='rgba(244,130,10,0.12)'" />
+                <div class="img-overlay"><span class="overlay-label">主視覺 LOGO</span></div>
+              </div>
+            </div>
+            <div>
+              <span class="desc-label" style="color:var(--faint);font-family:var(--font-mono);font-size:0.5rem;letter-spacing:0.25em;text-transform:uppercase;display:block;margin-bottom:0.5rem;">IG 版面</span>
+              <div style="border-radius:1.25rem;overflow:hidden;border:1px solid rgba(244,130,10,0.2);background:rgba(244,130,10,0.04);">
+                <img src="screen-3.png" alt="小運 IG 版面"
+                  style="width:100%;display:block;"
+                  onerror="this.parentElement.style.background='rgba(244,130,10,0.08)';this.style.display='none';" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 右：12宮格 -->
+        <div>
+          <span class="desc-label" style="color:var(--faint);font-family:var(--font-mono);font-size:0.5rem;letter-spacing:0.25em;text-transform:uppercase;display:block;margin-bottom:0.6rem;">IG 12 宮格冒險地圖</span>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;border-radius:0.75rem;overflow:hidden;">
+            <div style="aspect-ratio:1;overflow:hidden;"><img src="未命名 161.png" style="width:300%;height:100%;object-fit:cover;display:block;object-position:0% 0%;margin-left:0;" alt="" onerror="this.parentElement.style.background='#1a0a00'" /></div>
+            <div style="aspect-ratio:1;overflow:hidden;"><img src="未命名 161.png" style="width:300%;height:100%;object-fit:cover;display:block;object-position:50% 0%;margin-left:-100%;" alt="" onerror="this.parentElement.style.background='#200d00'" /></div>
+            <div style="aspect-ratio:1;overflow:hidden;"><img src="未命名 161.png" style="width:300%;height:100%;object-fit:cover;display:block;object-position:100% 0%;margin-left:-200%;" alt="" onerror="this.parentElement.style.background='#1a0a00'" /></div>
+            <div style="aspect-ratio:1;overflow:hidden;"><img src="未命名 161.png" style="width:300%;height:100%;object-fit:cover;display:block;object-position:0% 33%;margin-left:0;" alt="" onerror="this.parentElement.style.background='#200d00'" /></div>
+            <div style="aspect-ratio:1;overflow:hidden;"><img src="未命名 161.png" style="width:300%;height:100%;object-fit:cover;display:block;object-position:50% 33%;margin-left:-100%;" alt="" onerror="this.parentElement.style.background='#1a0a00'" /></div>
+            <div style="aspect-ratio:1;overflow:hidden;"><img src="未命名 161.png" style="width:300%;height:100%;object-fit:cover;display:block;object-position:100% 33%;margin-left:-200%;" alt="" onerror="this.parentElement.style.background='#200d00'" /></div>
+            <div style="aspect-ratio:1;overflow:hidden;"><img src="未命名 161.png" style="width:300%;height:100%;object-fit:cover;display:block;object-position:0% 66%;margin-left:0;" alt="" onerror="this.parentElement.style.background='#1a0a00'" /></div>
+            <div style="aspect-ratio:1;overflow:hidden;"><img src="未命名 161.png" style="width:300%;height:100%;object-fit:cover;display:block;object-position:50% 66%;margin-left:-100%;" alt="" onerror="this.parentElement.style.background='#200d00'" /></div>
+            <div style="aspect-ratio:1;overflow:hidden;"><img src="未命名 161.png" style="width:300%;height:100%;object-fit:cover;display:block;object-position:100% 66%;margin-left:-200%;" alt="" onerror="this.parentElement.style.background='#1a0a00'" /></div>
+            <div style="aspect-ratio:1;overflow:hidden;"><img src="未命名 161.png" style="width:300%;height:100%;object-fit:cover;display:block;object-position:0% 100%;margin-left:0;" alt="" onerror="this.parentElement.style.background='#200d00'" /></div>
+            <div style="aspect-ratio:1;overflow:hidden;"><img src="未命名 161.png" style="width:300%;height:100%;object-fit:cover;display:block;object-position:50% 100%;margin-left:-100%;" alt="" onerror="this.parentElement.style.background='#1a0a00'" /></div>
+            <div style="aspect-ratio:1;overflow:hidden;"><img src="未命名 161.png" style="width:300%;height:100%;object-fit:cover;display:block;object-position:100% 100%;margin-left:-200%;" alt="" onerror="this.parentElement.style.background='#200d00'" /></div>
+          </div>
+          <p style="font-size:0.6rem;color:var(--faint);margin-top:0.6rem;font-family:var(--font-mono);">12 格拼接 — 實際 IG 首頁視覺</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="sec-divider"></div>
+
+  <!-- FOOTER -->
+  <footer style="padding: 3rem 1.5rem; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 3rem; position: relative; z-index: 10;">
+    <p style="color: rgb(100 116 139); font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;">© 2026 Yiting Luo 羅亦庭. 版權所有。</p>
+  </footer>
+
+
+  <script>
+    // Side nav active highlight only
+    const sideItems = document.querySelectorAll('.side-item');
+    const secEls = [document.getElementById('p01'), document.getElementById('p02'), document.getElementById('p03')];
+    function updateSide() {
+      const mid = window.scrollY + window.innerHeight * 0.4;
+      secEls.forEach((s, i) => {
+        if (!s) return;
+        const top = s.offsetTop, bot = top + s.offsetHeight;
+        sideItems[i].classList.toggle('active', mid >= top && mid < bot);
+      });
+    }
+    window.addEventListener('scroll', updateSide, { passive: true });
+    updateSide();
+
+    // ── Scroll Reveal ──
+    const revealTargets = document.querySelectorAll(
+      '.reveal, .sec-header, .color-row, .desc-card, .grid-2-custom, .care-layout, .anno-bubble'
+    );
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('scroll-visible', 'visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+    revealTargets.forEach(el => revealObserver.observe(el));
+  </script>
+</body>
+</html>

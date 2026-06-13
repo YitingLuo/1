@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LINE AI 智能客服系統 — 羅亦庭</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #06060e;
+      --surface: #0d0d1a;
+      --border: rgba(255,255,255,0.07);
+      --text: #e8e6f4;
+      --muted: rgba(232,230,244,0.5);
+      --faint: rgba(232,230,244,0.18);
+      --accent: #00e5ff;
+      --accent2: #7c3aed;
+      --accent3: #06d6a0;
+      --accent4: #f59e0b;
+      --font-sans: 'Noto Sans TC', sans-serif;
+      --font-mono: 'Space Mono', monospace;
+      --font-body: 'DM Sans', sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    body::after { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events:none; z-index:9999; opacity:0.35; }
+
+    /* ── NAV ── */
+    nav.top-nav { position:fixed; top:1rem; left:50%; transform:translateX(-50%); z-index:200; display:flex; align-items:center; gap:1.5rem; padding:0.55rem 1.4rem; border-radius:999px; border:1px solid rgba(255,255,255,0.08); background:rgba(13,13,26,0.7); backdrop-filter:blur(24px); white-space:nowrap; }
+    .nav-sep { color:rgba(255,255,255,0.18); }
+    .nav-link { font-size:0.75rem; color:rgba(255,255,255,0.4); text-decoration:none; transition:color .2s; }
+    .nav-link:hover { color:#fff; }
+    .nav-current { font-size:0.75rem; font-weight:700; color:#fff; font-family:var(--font-mono); }
+
+    /* ── SIDE NAV ── */
+    .side-nav { position:fixed; right:1.6rem; top:50%; transform:translateY(-50%); z-index:150; display:flex; flex-direction:column; gap:1.4rem; align-items:flex-end; }
+    .side-item { display:flex; align-items:center; gap:0.55rem; text-decoration:none; cursor:pointer; }
+    .side-label { font-family:var(--font-mono); font-size:0.46rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--faint); opacity:0; transform:translateX(6px); transition:opacity .3s, transform .3s, color .3s; white-space:nowrap; }
+    .side-item:hover .side-label, .side-item.active .side-label { opacity:1; transform:translateX(0); }
+    .side-item.active .side-label { color:var(--text); }
+    .side-dot { width:5px; height:5px; border-radius:50%; background:var(--faint); transition:all .35s cubic-bezier(.22,1,.36,1); flex-shrink:0; }
+    .side-item.active .side-dot { width:9px; height:9px; }
+    .side-item[data-sec="01"].active .side-dot { background:var(--accent); box-shadow:0 0 10px var(--accent); }
+    .side-item[data-sec="02"].active .side-dot { background:var(--accent2); box-shadow:0 0 10px var(--accent2); }
+    .side-item[data-sec="03"].active .side-dot { background:var(--accent3); box-shadow:0 0 10px var(--accent3); }
+    .side-item[data-sec="04"].active .side-dot { background:var(--accent4); box-shadow:0 0 10px var(--accent4); }
+    .side-item[data-sec="05"].active .side-dot { background:#e879f9; box-shadow:0 0 10px #e879f9; }
+    .side-item[data-sec="06"].active .side-dot { background:#94a3b8; box-shadow:0 0 10px #94a3b8; }
+
+    /* ── HERO ── */
+    #hero { position:relative; height:100vh; min-height:640px; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:0 8vw; overflow:hidden; text-align:center; }
+    .hero-grid-bg { position:absolute; inset:0; z-index:0; background-image: linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px); background-size: 60px 60px; mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%); }
+    .hero-orb { position:absolute; border-radius:50%; filter:blur(100px); pointer-events:none; }
+    .hero-orb-1 { width:500px; height:500px; background:#7c3aed; opacity:0.18; top:-10%; right:5%; animation:orbFloat 16s infinite ease-in-out alternate; }
+    .hero-orb-2 { width:350px; height:350px; background:#00e5ff; opacity:0.12; bottom:5%; left:40%; animation:orbFloat 20s infinite ease-in-out alternate; animation-delay:-7s; }
+    @keyframes orbFloat { 0%{transform:translate(0,0);} 100%{transform:translate(30px,-50px);} }
+
+    .hero-inner { position:relative; z-index:2; max-width:780px; display:flex; flex-direction:column; align-items:center; }
+    .hero-eyebrow { font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--accent); margin-bottom:1.5rem; animation:fadeUp .7s .1s both; }
+    .hero-title { font-family:var(--font-sans); font-weight:900; font-size:clamp(2.8rem,6vw,5.5rem); line-height:1.08; letter-spacing:-0.02em; margin-bottom:1.5rem; color:#fff; }
+    .hero-title .cursor { display:inline-block; width:3px; height:0.85em; background:var(--accent); margin-left:4px; vertical-align:middle; animation:blink 1s step-end infinite; }
+    @keyframes blink { 50%{opacity:0;} }
+    .hero-sub { font-size:1rem; color:var(--muted); line-height:1.8; max-width:520px; margin-bottom:2rem; }
+    .hero-chips { display:flex; gap:0.6rem; flex-wrap:wrap; justify-content:center; margin-bottom:2.5rem; }
+    .chip { padding:0.4rem 0.85rem; border-radius:6px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); font-family:var(--font-mono); font-size:0.58rem; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.65); }
+    .chip.highlight { border-color:rgba(0,229,255,0.3); background:rgba(0,229,255,0.06); color:var(--accent); }
+
+    /* scroll 箭頭在 hero-inner 內，文字下方 */
+    .hero-scroll-inner { display:flex; flex-direction:column; align-items:center; gap:0.4rem; }
+    .hero-scroll-inner span { font-family:var(--font-mono); font-size:0.5rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--faint); }
+    .scroll-arrow { display:flex; flex-direction:column; align-items:center; gap:3px; animation:arrowBounce 1.6s ease-in-out infinite; }
+    @keyframes arrowBounce { 0%,100%{transform:translateY(0);opacity:0.5;} 50%{transform:translateY(8px);opacity:1;} }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+
+    /* ── SECTIONS ── */
+    .sec { padding:7rem 8vw; position:relative; }
+    .sec-inner { max-width:1100px; margin:0 auto; }
+    .sec-divider { height:1px; background:linear-gradient(to right, transparent, var(--border), transparent); }
+
+    .sec-label { font-family:var(--font-mono); font-size:0.68rem; font-weight:700; letter-spacing:0.25em; text-transform:uppercase; margin-bottom:0.8rem; display:block; }
+    .sec-title { font-family:var(--font-sans); font-weight:900; font-size:clamp(1.8rem,3.5vw,2.8rem); line-height:1.1; margin-bottom:0.75rem; }
+    .sec-sub { font-size:0.88rem; color:var(--muted); line-height:1.8; max-width:580px; margin-bottom:2.5rem; }
+
+    /* ── PAIN ── */
+    #s01 { background: radial-gradient(ellipse 70% 60% at 80% 20%, rgba(0,229,255,0.05), transparent), var(--bg); }
+    .stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-bottom:2.5rem; }
+    .stat-card { background:rgba(0,229,255,0.04); border:1px solid rgba(0,229,255,0.12); border-radius:1.25rem; padding:2rem 1.75rem; cursor:default; transition:border-color .3s, transform .3s; }
+    .stat-card:hover { border-color:rgba(0,229,255,0.3); transform:translateY(-4px); }
+    .stat-num { font-family:var(--font-mono); font-size:2.8rem; font-weight:700; color:var(--accent); line-height:1; margin-bottom:0.5rem; }
+    .stat-desc { font-size:0.78rem; color:var(--muted); line-height:1.7; }
+
+    /* ── ARCH ── */
+    #s02 { background: radial-gradient(ellipse 60% 50% at 20% 60%, rgba(124,58,237,0.06), transparent), var(--bg); }
+    .arch-nodes { display:flex; align-items:stretch; gap:0; margin:2.5rem 0 1rem; overflow-x:auto; padding:0.5rem 0; flex-wrap:nowrap; }
+    .arch-node { display:flex; flex-direction:column; align-items:center; gap:0.4rem; min-width:110px; flex:1; cursor:pointer; }
+    .arch-box { width:100%; padding:0.75rem 0.5rem; border-radius:10px; border:1px solid rgba(124,58,237,0.25); background:rgba(124,58,237,0.07); font-family:var(--font-mono); font-size:0.55rem; letter-spacing:0.08em; text-align:center; color:var(--text); transition:all .25s; }
+    .arch-node:hover .arch-box, .arch-node.active .arch-box { border-color:rgba(124,58,237,0.6); background:rgba(124,58,237,0.18); box-shadow:0 0 20px rgba(124,58,237,0.2); }
+    .arch-node-label { font-size:0.44rem; font-family:var(--font-mono); letter-spacing:0.12em; text-transform:uppercase; color:var(--faint); text-align:center; }
+    .arch-arrow-wrap { display:flex; align-items:center; justify-content:center; padding:0 0.2rem; color:rgba(124,58,237,0.4); font-size:1rem; min-width:24px; flex-shrink:0; }
+
+    /* 節點切換區：上文字說明 + 下視覺小視窗 */
+    .arch-switch { background:rgba(124,58,237,0.04); border:1px solid rgba(124,58,237,0.15); border-radius:1rem; overflow:hidden; margin-top:0; }
+    .arch-switch-text { padding:1.25rem 1.5rem; font-size:0.82rem; color:rgba(232,230,244,0.75); line-height:1.8; border-bottom:1px solid rgba(124,58,237,0.1); }
+    .arch-switch-text strong { color:#c4b5fd; }
+    .arch-switch-visual { min-height:160px; display:flex; align-items:center; justify-content:center; padding:1.5rem; background:rgba(0,0,0,0.2); position:relative; overflow:hidden; }
+
+    /* 各節點視覺樣式 */
+    /* LINE */
+    .vis-line { display:flex; flex-direction:column; align-items:center; gap:1rem; width:100%; }
+    .chat-bubble-wrap { display:flex; flex-direction:column; gap:0.5rem; width:260px; }
+    .cbubble { padding:0.5rem 0.85rem; border-radius:12px; font-size:0.72rem; line-height:1.5; max-width:80%; }
+    .cbubble.user { background:#00e5ff; color:#06060e; align-self:flex-end; border-radius:12px 12px 2px 12px; }
+    .cbubble.ai { background:rgba(255,255,255,0.08); color:var(--text); align-self:flex-start; border-radius:12px 12px 12px 2px; }
+    .webhook-arrow { font-family:var(--font-mono); font-size:0.55rem; color:rgba(0,229,255,0.5); text-align:center; letter-spacing:0.1em; }
+    /* Flask */
+    .vis-code { font-family:var(--font-mono); font-size:0.68rem; line-height:1.9; text-align:left; }
+    /* Dify */
+    .vis-flow { display:flex; flex-direction:column; gap:0.4rem; align-items:flex-start; }
+    .flow-node { padding:0.35rem 0.85rem; border-radius:6px; font-family:var(--font-mono); font-size:0.6rem; }
+    .flow-arrow { font-family:var(--font-mono); font-size:0.55rem; color:rgba(124,58,237,0.5); padding-left:0.5rem; }
+    /* Gemini */
+    .vis-compare { display:grid; grid-template-columns:1fr 1fr; gap:1rem; width:100%; max-width:380px; }
+    .cmp-card { border-radius:8px; padding:0.75rem 1rem; }
+    .cmp-label { font-family:var(--font-mono); font-size:0.48rem; letter-spacing:0.15em; text-transform:uppercase; margin-bottom:0.3rem; }
+    .cmp-val { font-family:var(--font-mono); font-size:1rem; font-weight:700; }
+    /* Sheets */
+    .vis-table { border-radius:8px; overflow:hidden; border:1px solid rgba(6,214,160,0.2); font-family:var(--font-mono); font-size:0.58rem; }
+    .tbl-head { background:rgba(6,214,160,0.12); display:grid; grid-template-columns:repeat(4,1fr); }
+    .tbl-row { display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid rgba(6,214,160,0.1); }
+    .tbl-cell { padding:0.3rem 0.4rem; color:rgba(232,230,244,0.6); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .tbl-head .tbl-cell { color:var(--accent3); }
+    /* Maps */
+    .vis-map { position:relative; width:240px; height:130px; background:rgba(245,158,11,0.06); border-radius:10px; border:1px solid rgba(245,158,11,0.2); overflow:hidden; }
+    .map-dot { position:absolute; width:10px; height:10px; border-radius:50%; background:var(--accent4); box-shadow:0 0 12px var(--accent4); }
+    .map-pulse { position:absolute; width:24px; height:24px; border-radius:50%; border:2px solid var(--accent4); opacity:0; animation:mapPulse 2s ease-out infinite; transform:translate(-50%,-50%); }
+    .map-label { position:absolute; font-family:var(--font-mono); font-size:0.48rem; background:rgba(13,13,26,0.9); padding:2px 6px; border-radius:4px; color:var(--accent4); white-space:nowrap; }
+    @keyframes mapPulse { 0%{transform:translate(-50%,-50%) scale(1);opacity:0.8;} 100%{transform:translate(-50%,-50%) scale(2.5);opacity:0;} }
+
+    /* Tech pills */
+    .tech-pills { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1.5rem; }
+    .tp { padding:0.35rem 0.8rem; border-radius:999px; font-family:var(--font-mono); font-size:0.55rem; letter-spacing:0.1em; text-transform:uppercase; cursor:default; transition:transform .2s; }
+    .tp:hover { transform:translateY(-2px); }
+    .tp-c { background:rgba(0,229,255,0.08); border:1px solid rgba(0,229,255,0.2); color:#7dd3fc; }
+    .tp-p { background:rgba(124,58,237,0.1); border:1px solid rgba(124,58,237,0.3); color:#c4b5fd; }
+    .tp-g { background:rgba(6,214,160,0.08); border:1px solid rgba(6,214,160,0.25); color:#6ee7b7; }
+    .tp-o { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); color:#fbbf24; }
+
+    /* ── FEATURE ── */
+    #s03 { background: radial-gradient(ellipse 60% 50% at 70% 30%, rgba(6,214,160,0.05), transparent), var(--bg); }
+    .feature-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+    .feat-card { background:rgba(6,214,160,0.03); border:1px solid rgba(6,214,160,0.1); border-radius:1.25rem; padding:1.5rem; cursor:pointer; transition:border-color .3s, transform .3s, background .3s; position:relative; overflow:hidden; }
+    .feat-card:hover, .feat-card.open { border-color:rgba(6,214,160,0.3); background:rgba(6,214,160,0.07); }
+    .feat-card.open { transform:none; }
+    .feat-icon { font-size:1.6rem; margin-bottom:0.75rem; }
+    .feat-title { font-size:0.88rem; font-weight:700; color:var(--accent3); margin-bottom:0.4rem; }
+    .feat-short { font-size:0.76rem; color:var(--muted); line-height:1.6; }
+    .feat-long { font-size:0.76rem; color:rgba(232,230,244,0.65); line-height:1.7; max-height:0; overflow:hidden; transition:max-height .35s ease, margin .35s; margin-top:0; }
+    .feat-card.open .feat-long { max-height:150px; margin-top:0.75rem; }
+    .feat-toggle { position:absolute; top:1rem; right:1rem; width:20px; height:20px; border-radius:50%; border:1px solid rgba(6,214,160,0.3); display:flex; align-items:center; justify-content:center; font-size:0.65rem; color:var(--accent3); transition:transform .3s; }
+    .feat-card.open .feat-toggle { transform:rotate(45deg); }
+
+    .mockup-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:2rem; }
+    .mockup-box { border-radius:1rem; overflow:hidden; border:1px solid var(--border); background:rgba(255,255,255,0.015); aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; transition:border-color .3s; }
+    .mockup-box:hover { border-color:rgba(6,214,160,0.2); }
+    .mockup-inner { text-align:center; }
+    .mockup-icon { font-size:1.8rem; margin-bottom:0.5rem; opacity:0.4; }
+    .mockup-text { font-family:var(--font-mono); font-size:0.48rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--faint); }
+
+    /* ── COST ── */
+    #s04 { background: radial-gradient(ellipse 60% 50% at 30% 70%, rgba(245,158,11,0.05), transparent), var(--bg); }
+    .cost-slider-wrap { background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:1.25rem; padding:2rem; margin-bottom:1.5rem; }
+    .slider-label { font-family:var(--font-mono); font-size:0.55rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:1rem; }
+    .slider-row { display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; }
+    .slider-val { font-family:var(--font-mono); font-size:1.4rem; font-weight:700; color:var(--accent4); min-width:60px; }
+    input[type=range] { flex:1; -webkit-appearance:none; height:4px; background:rgba(245,158,11,0.2); border-radius:2px; outline:none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--accent4); cursor:pointer; box-shadow:0 0 8px rgba(245,158,11,0.5); }
+    .cost-result-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+    .cost-res-card { background:rgba(245,158,11,0.04); border:1px solid rgba(245,158,11,0.12); border-radius:1rem; padding:1.25rem; text-align:center; transition:border-color .3s; }
+    .cost-res-card:hover { border-color:rgba(245,158,11,0.3); }
+    .cost-model { font-family:var(--font-mono); font-size:0.52rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem; }
+    .cost-price { font-family:var(--font-mono); font-size:1.5rem; font-weight:700; color:var(--accent4); }
+    .cost-note { font-size:0.68rem; color:var(--faint); margin-top:0.35rem; }
+    .compare-table { width:100%; border-collapse:collapse; margin-top:1.5rem; }
+    .compare-table th { font-family:var(--font-mono); font-size:0.52rem; letter-spacing:0.15em; text-transform:uppercase; padding:0.75rem 1rem; text-align:left; border-bottom:1px solid var(--border); color:var(--muted); }
+    .compare-table td { padding:0.75rem 1rem; font-size:0.78rem; border-bottom:1px solid rgba(255,255,255,0.04); }
+    .compare-table tr:last-child td { border-bottom:none; }
+    .bad { color:#f87171; } .good { color:var(--accent3); }
+    .save-row { background:rgba(6,214,160,0.06); }
+
+    /* ── ROADMAP ── */
+    #s05 { background: radial-gradient(ellipse 60% 50% at 60% 20%, rgba(232,121,249,0.05), transparent), var(--bg); }
+    .roadmap-wrap { display:grid; grid-template-columns:repeat(3,1fr); gap:1.25rem; }
+    .road-card { border-radius:1.25rem; padding:1.75rem; border:1px solid var(--border); background:rgba(255,255,255,0.02); }
+    .road-card.done { border-color:rgba(6,214,160,0.2); background:rgba(6,214,160,0.04); }
+    .road-phase { font-family:var(--font-mono); font-size:0.5rem; letter-spacing:0.25em; text-transform:uppercase; color:#e879f9; margin-bottom:0.4rem; }
+    .road-title { font-size:1rem; font-weight:700; margin-bottom:0.5rem; }
+    .road-badge { display:inline-block; padding:0.18rem 0.55rem; border-radius:999px; font-family:var(--font-mono); font-size:0.46rem; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:1rem; }
+    .rb-done { background:rgba(6,214,160,0.1); border:1px solid rgba(6,214,160,0.3); color:var(--accent3); }
+    .rb-plan { background:rgba(232,121,249,0.08); border:1px solid rgba(232,121,249,0.2); color:#e879f9; }
+    .road-items { list-style:none; display:flex; flex-direction:column; gap:0.45rem; }
+    .road-items li { font-size:0.76rem; color:var(--muted); display:flex; align-items:flex-start; gap:0.5rem; line-height:1.5; }
+    .road-items li::before { content:'→'; color:#e879f9; flex-shrink:0; font-family:var(--font-mono); font-size:0.65rem; margin-top:1px; }
+    .road-items li.done-item::before { content:'✓'; color:var(--accent3); }
+    .progress-wrap { margin:2.5rem 0 0; }
+    .progress-label { font-family:var(--font-mono); font-size:0.5rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem; display:flex; justify-content:space-between; }
+    .progress-bar { height:4px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden; }
+    .progress-fill { height:100%; border-radius:2px; background:linear-gradient(to right, var(--accent3), #e879f9); width:0; transition:width 1.2s cubic-bezier(.22,1,.36,1); }
+
+    /* ── REFLECT ── */
+    #s06 { background: radial-gradient(ellipse 50% 40% at 40% 50%, rgba(148,163,184,0.04), transparent), var(--bg); }
+    .reflect-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+    .reflect-card { background:rgba(148,163,184,0.03); border:1px solid rgba(148,163,184,0.1); border-radius:1.25rem; padding:1.5rem; transition:border-color .3s; }
+    .reflect-card:hover { border-color:rgba(148,163,184,0.2); }
+    .reflect-q { font-family:var(--font-mono); font-size:0.55rem; letter-spacing:0.2em; text-transform:uppercase; color:#94a3b8; margin-bottom:0.75rem; }
+    .reflect-a { font-size:0.82rem; color:rgba(232,230,244,0.68); line-height:1.8; }
+    .info-bar { background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:1rem; padding:1.25rem 1.5rem; margin-top:1.5rem; font-size:0.8rem; color:var(--muted); line-height:1.8; }
+
+    footer { padding:3rem 8vw; text-align:center; border-top:1px solid var(--border); }
+    footer p { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--faint); }
+
+    .rv { opacity:0; transform:translateY(28px); transition:opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); }
+    .rv.d1{transition-delay:.06s;} .rv.d2{transition-delay:.12s;} .rv.d3{transition-delay:.18s;} .rv.d4{transition-delay:.24s;}
+    .rv.in { opacity:1; transform:translateY(0); }
+
+    @media(max-width:860px) {
+      .stat-row, .feature-grid, .roadmap-wrap, .reflect-grid, .cost-result-grid, .mockup-grid { grid-template-columns:1fr; }
+      .arch-nodes { overflow-x:auto; }
+      nav.top-nav { gap:0.75rem; padding:0.5rem 1rem; }
+      .side-nav { display:none; }
+      .sec { padding:5rem 5vw; }
+      .vis-compare { grid-template-columns:1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <a href="作品集.html" class="nav-link">
+    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    返回作品集
+  </a>
+  <span class="nav-sep">|</span>
+  <a href="葉子秘境.html" class="nav-link">專案 01：葉子祕境</a>
+  <span class="nav-sep">|</span>
+  <a href="new.html" class="nav-link">專案 02：平面設計集</a>
+  <span class="nav-sep">|</span>
+  <span class="nav-current">專案 03：LINE AI 客服</span>
+</nav>
+
+<nav class="side-nav">
+  <a href="#s01" class="side-item" data-sec="01"><span class="side-label">痛點</span><span class="side-dot"></span></a>
+  <a href="#s02" class="side-item" data-sec="02"><span class="side-label">技術</span><span class="side-dot"></span></a>
+  <a href="#s03" class="side-item" data-sec="03"><span class="side-label">功能</span><span class="side-dot"></span></a>
+  <a href="#s04" class="side-item" data-sec="04"><span class="side-label">成本</span><span class="side-dot"></span></a>
+  <a href="#s05" class="side-item" data-sec="05"><span class="side-label">展望</span><span class="side-dot"></span></a>
+  <a href="#s06" class="side-item" data-sec="06"><span class="side-label">反思</span><span class="side-dot"></span></a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+  <div class="hero-inner">
+    <p class="hero-eyebrow">AI Engineering · Internship · 富堡工業 8929 · 2026</p>
+    <h1 class="hero-title">
+      <span id="typed-title"></span><span class="cursor" id="cursor"></span>
+    </h1>
+    <p class="hero-sub" id="hero-sub" style="opacity:0;transition:opacity .6s .8s;">
+      為成人照護品牌打造端對端 LINE AI 客服，整合 RAG 知識庫、六路意圖分流、<br/>GPS 門市查詢與完整客服後台。
+    </p>
+    <div class="hero-chips" id="hero-chips" style="opacity:0;transition:opacity .6s 1s;">
+      <span class="chip">Python · Flask</span>
+      <span class="chip">Dify Chatflow</span>
+      <span class="chip">LINE API</span>
+      <span class="chip">RAG</span>
+      <span class="chip">Google Maps</span>
+      <span class="chip highlight">合作企業：富堡工業 8929</span>
+    </div>
+    <div class="hero-scroll-inner" id="hero-scroll" style="opacity:0;transition:opacity .6s 1.2s;">
+      <span>Scroll</span>
+      <div class="scroll-arrow">
+        <svg width="20" height="12" viewBox="0 0 20 12" fill="none"><path d="M1 1L10 10L19 1" stroke="rgba(232,230,244,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg width="20" height="12" viewBox="0 0 20 12" fill="none"><path d="M1 1L10 10L19 1" stroke="rgba(232,230,244,0.25)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="sec-divider"></div>
+
+<!-- 01 痛點 -->
+<section class="sec" id="s01">
+  <div class="sec-inner">
+    <div class="rv">
+      <span class="sec-label" style="color:var(--accent);">01 / 06 — Problem</span>
+      <h2 class="sec-title">為什麼需要 AI 客服？</h2>
+      <p class="sec-sub">富堡工業透過 LINE 服務成人照護品牌客戶，隨著業務成長，傳統人工客服遭遇三個核心瓶頸。</p>
+    </div>
+    <div class="stat-row rv d1">
+      <div class="stat-card">
+        <div class="stat-num" data-target="60" data-suffix=" min">0</div>
+        <div class="stat-desc"><strong style="color:var(--text);">人工回覆最長等待</strong><br/>高峰時段客服無暇處理，直接影響購買轉換率</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" data-target="0" data-suffix="%">100</div>
+        <div class="stat-desc"><strong style="color:var(--text);">下班後服務覆蓋率</strong><br/>週末假日完全空窗，潛在訂單白白流失</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" data-target="70" data-suffix="%+">0</div>
+        <div class="stat-desc"><strong style="color:var(--text);">重複性問題佔比</strong><br/>尺寸推薦、通路查詢、訂購流程每天重複作答</div>
+      </div>
+    </div>
+    <div class="rv d2" style="background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.12);border-radius:1rem;padding:1.25rem 1.5rem;font-size:0.82rem;color:var(--muted);line-height:1.8;">
+      <span style="font-family:var(--font-mono);font-size:0.52rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:0.5rem;">為什麼是 LINE</span>
+      目標客群是照顧長輩的中高齡家屬，無需額外下載或學習，將 AI 客服建置在既有渠道，是降低進入障礙的關鍵決策。
+    </div>
+  </div>
+</section>
+
+<div class="sec-divider"></div>
+
+<!-- 02 技術 -->
+<section class="sec" id="s02">
+  <div class="sec-inner">
+    <div class="rv">
+      <span class="sec-label" style="color:var(--accent2);">02 / 06 — Architecture</span>
+      <h2 class="sec-title">技術架構與選型邏輯</h2>
+      <p class="sec-sub">點擊各節點了解選型理由。</p>
+    </div>
+
+    <div class="arch-nodes rv d1">
+      <div class="arch-node" data-key="line">
+        <div class="arch-box" style="border-color:rgba(0,229,255,0.3);background:rgba(0,229,255,0.07);">LINE<br/>Messaging API</div>
+        <div class="arch-node-label">客戶端介面</div>
+      </div>
+      <div class="arch-arrow-wrap">→</div>
+      <div class="arch-node" data-key="flask">
+        <div class="arch-box">Flask<br/>+ ngrok</div>
+        <div class="arch-node-label">Webhook 接收</div>
+      </div>
+      <div class="arch-arrow-wrap">→</div>
+      <div class="arch-node" data-key="dify">
+        <div class="arch-box" style="border-color:rgba(124,58,237,0.4);background:rgba(124,58,237,0.1);">Dify<br/>Chatflow</div>
+        <div class="arch-node-label">AI 工作流引擎</div>
+      </div>
+      <div class="arch-arrow-wrap">→</div>
+      <div class="arch-node" data-key="gemini">
+        <div class="arch-box">Gemini<br/>2.5 Flash</div>
+        <div class="arch-node-label">語言模型（現行）</div>
+      </div>
+      <div class="arch-arrow-wrap">→</div>
+      <div class="arch-node" data-key="sheets">
+        <div class="arch-box" style="border-color:rgba(6,214,160,0.3);background:rgba(6,214,160,0.07);">Google<br/>Sheets</div>
+        <div class="arch-node-label">資料儲存（PoC）</div>
+      </div>
+      <div class="arch-arrow-wrap">→</div>
+      <div class="arch-node" data-key="maps">
+        <div class="arch-box" style="border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.07);">Maps<br/>Places API</div>
+        <div class="arch-node-label">門市查詢</div>
+      </div>
+    </div>
+
+    <!-- 切換區：文字 + 視覺小視窗 -->
+    <div class="arch-switch rv d2" id="arch-switch">
+      <div class="arch-switch-text" id="arch-switch-text">
+        <strong>點擊上方節點</strong>查看每個技術選型的理由，右側會出現對應的視覺示意。
+      </div>
+      <div class="arch-switch-visual" id="arch-switch-visual">
+        <span style="font-family:var(--font-mono);font-size:0.52rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--faint);">↑ 點擊節點</span>
+      </div>
+    </div>
+
+    <div class="tech-pills rv d3">
+      <span class="tp tp-p">Python 3.12</span><span class="tp tp-p">Flask</span><span class="tp tp-p">Dify Chatflow</span>
+      <span class="tp tp-c">LINE Messaging API</span><span class="tp tp-c">Flex Message</span><span class="tp tp-c">Quick Reply</span>
+      <span class="tp tp-p">Gemini 2.5 Flash</span><span class="tp tp-p">RAG / Hybrid Search</span>
+      <span class="tp tp-g">Google Sheets</span><span class="tp tp-g">gspread</span>
+      <span class="tp tp-o">Google Maps Places API</span><span class="tp tp-c">ngrok</span><span class="tp tp-g">Google Colab</span>
+    </div>
+  </div>
+</section>
+
+<div class="sec-divider"></div>
+
+<!-- 03 功能 -->
+<section class="sec" id="s03">
+  <div class="sec-inner">
+    <div class="rv">
+      <span class="sec-label" style="color:var(--accent3);">03 / 06 — Features</span>
+      <h2 class="sec-title">核心功能</h2>
+      <p class="sec-sub">點擊卡片展開詳細說明。</p>
+    </div>
+    <div class="feature-grid rv d1">
+      <div class="feat-card" onclick="toggleFeat(this)">
+        <div class="feat-toggle">+</div>
+        <div class="feat-icon">🎯</div>
+        <div class="feat-title">六路意圖分流</div>
+        <div class="feat-short">AI 自動判斷問題類型並導向對應處理流程</div>
+        <div class="feat-long">推薦、訂購、客訴、通路、大宗、閒聊六條路徑，每條有獨立 System Prompt 和知識庫配置。意圖識別在 Dify IF/ELSE 節點執行，分流準確率高且可視化維護。</div>
+      </div>
+      <div class="feat-card" onclick="toggleFeat(this)">
+        <div class="feat-toggle">+</div>
+        <div class="feat-icon">🧠</div>
+        <div class="feat-title">回頭客記憶系統</div>
+        <div class="feat-short">自動擷取並儲存用戶背景，下次不重複詢問</div>
+        <div class="feat-long">LLM 從對話中提取行動力、困擾、常買產品、付款偏好，以 JSON 格式寫入 Google Sheets 用戶檔案工作表。下次對話自動帶入背景資料作為 System Prompt 前置脈絡。</div>
+      </div>
+      <div class="feat-card" onclick="toggleFeat(this)">
+        <div class="feat-toggle">+</div>
+        <div class="feat-icon">❤️</div>
+        <div class="feat-title">四步關懷推薦法</div>
+        <div class="feat-short">結構化推薦流程，減少客人選擇困難</div>
+        <div class="feat-long">確認行動力 → 確認困擾 → 衛教分享 → 精準推薦。搭配 LINE Quick Reply 按鈕讓客人一鍵選擇，從需求到推薦通常在 3–4 輪對話內完成。</div>
+      </div>
+      <div class="feat-card" onclick="toggleFeat(this)">
+        <div class="feat-toggle">+</div>
+        <div class="feat-icon">📦</div>
+        <div class="feat-title">精簡訂購流程</div>
+        <div class="feat-short">從 35+ 輪壓縮至 7–10 輪完成訂購</div>
+        <div class="feat-long">姓名電話地址合併一問，送貨單發票管理室合併確認。這是 UX 設計決策而非 AI 決策——合併哪些問題、哪些用按鈕取代輸入，直接決定對話效率。</div>
+      </div>
+      <div class="feat-card" onclick="toggleFeat(this)">
+        <div class="feat-toggle">+</div>
+        <div class="feat-icon">📍</div>
+        <div class="feat-title">GPS 門市查詢</div>
+        <div class="feat-short">附近門市 + Google Maps 導航連結</div>
+        <div class="feat-long">支援兩種模式：GPS 定位（Nearby Search，2km 範圍）和文字區域查詢（Text Search）。加入 CHANNEL_KEYWORDS 過濾確保只顯示合作通路，排除無關店家。</div>
+      </div>
+      <div class="feat-card" onclick="toggleFeat(this)">
+        <div class="feat-toggle">+</div>
+        <div class="feat-icon">🛡</div>
+        <div class="feat-title">客服管理後台</div>
+        <div class="feat-short">訂單管理、對話記錄、知識庫同步一站完成</div>
+        <div class="feat-long">多帳號登入、訂單認領機制、情緒激動自動排前、填金額一鍵推播確認卡片給客人、後台同步知識庫。Flask 原生渲染，不依賴任何前端框架。</div>
+      </div>
+    </div>
+    <div class="mockup-grid rv d2">
+      <div class="mockup-box">
+        <div class="mockup-inner">
+          <div class="mockup-icon">🖥</div>
+          <div class="mockup-text">後台截圖 — 待補充</div>
+        </div>
+      </div>
+      <div class="mockup-box">
+        <div class="mockup-inner">
+          <div class="mockup-icon">📱</div>
+          <div class="mockup-text">LINE 對話截圖 — 待補充</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="sec-divider"></div>
+
+<!-- 04 成本 -->
+<section class="sec" id="s04">
+  <div class="sec-inner">
+    <div class="rv">
+      <span class="sec-label" style="color:var(--accent4);">04 / 06 — Cost</span>
+      <h2 class="sec-title">成本效益分析</h2>
+      <p class="sec-sub">拖動滑桿調整每日客人數，即時查看各模型的費用估算。</p>
+    </div>
+    <div class="cost-slider-wrap rv d1">
+      <div class="slider-label">每日活躍客人數</div>
+      <div class="slider-row">
+        <div class="slider-val" id="slider-val">50</div>
+        <input type="range" min="10" max="500" value="50" id="user-slider" oninput="updateCost(this.value)">
+        <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--faint);">500 人</div>
+      </div>
+      <div class="cost-result-grid">
+        <div class="cost-res-card">
+          <div class="cost-model">Gemini 2.5 Flash</div>
+          <div class="cost-price" id="cost-gemini">NT$ 432</div>
+          <div class="cost-note">LLM 費用 / 月</div>
+        </div>
+        <div class="cost-res-card">
+          <div class="cost-model">GPT-4o mini ✦ 推薦</div>
+          <div class="cost-price" id="cost-gpt">NT$ 864</div>
+          <div class="cost-note">LLM 費用 / 月</div>
+        </div>
+        <div class="cost-res-card">
+          <div class="cost-model">Claude Haiku 3.5</div>
+          <div class="cost-price" id="cost-claude">NT$ 1,944</div>
+          <div class="cost-note">LLM 費用 / 月</div>
+        </div>
+      </div>
+    </div>
+    <table class="compare-table rv d2">
+      <thead><tr><th>項目</th><th>傳統人工客服</th><th>AI 智能客服</th></tr></thead>
+      <tbody>
+        <tr><td>每月費用</td><td class="bad">NT$ 34,000–44,000</td><td class="good">NT$ 2,100–9,600</td></tr>
+        <tr><td>服務時間</td><td class="bad">週一至週五 8:30–17:30</td><td class="good">24 小時 × 7 天</td></tr>
+        <tr><td>同時處理量</td><td class="bad">1–2 組對話</td><td class="good">無上限並發</td></tr>
+        <tr><td>知識更新</td><td class="bad">重新培訓人員</td><td class="good">上傳文件即時生效</td></tr>
+        <tr><td>離職風險</td><td class="bad">高</td><td class="good">無</td></tr>
+        <tr class="save-row"><td><strong>每年節省（vs 1 人工客服）</strong></td><td>—</td><td class="good"><strong>NT$ 29–50 萬</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="sec-divider"></div>
+
+<!-- 05 展望 -->
+<section class="sec" id="s05">
+  <div class="sec-inner">
+    <div class="rv">
+      <span class="sec-label" style="color:#e879f9;">05 / 06 — Roadmap</span>
+      <h2 class="sec-title">三階段展望</h2>
+      <p class="sec-sub">PoC 驗證核心架構可行，下一步從驗證走向正式營運，再走向深度整合。</p>
+    </div>
+    <div class="progress-wrap rv d1">
+      <div class="progress-label"><span>整體進度</span><span>Phase 1 完成</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+    <div class="roadmap-wrap rv d2" style="margin-top:1.5rem;">
+      <div class="road-card done">
+        <div class="road-phase">Phase 01 · 2026 Q1–Q2</div>
+        <span class="road-badge rb-done">✓ 已完成</span>
+        <div class="road-title">核心功能驗證</div>
+        <ul class="road-items">
+          <li class="done-item">六路意圖分流</li>
+          <li class="done-item">RAG 知識庫問答</li>
+          <li class="done-item">完整訂購流程</li>
+          <li class="done-item">GPS 門市查詢</li>
+          <li class="done-item">回頭客記憶系統</li>
+          <li class="done-item">情緒偵測 + 後台</li>
+        </ul>
+      </div>
+      <div class="road-card">
+        <div class="road-phase">Phase 02 · 2026 Q3–Q4</div>
+        <span class="road-badge rb-plan">規劃中</span>
+        <div class="road-title">正式上線與升級</div>
+        <ul class="road-items">
+          <li>遷移至 GCP Cloud Run</li>
+          <li>模型升級至 GPT-4o mini</li>
+          <li>CYBERBIZ 電商串接</li>
+          <li>多品項購物車</li>
+          <li>LINE Chat Mode API</li>
+          <li>LINE Login 客服認證</li>
+        </ul>
+      </div>
+      <div class="road-card">
+        <div class="road-phase">Phase 03 · 2027</div>
+        <span class="road-badge rb-plan">長期規劃</span>
+        <div class="road-title">深度整合</div>
+        <ul class="road-items">
+          <li>ERP 系統串接</li>
+          <li>定時推播補貨提醒</li>
+          <li>Looker Studio 儀表板</li>
+          <li>會員系統整合</li>
+          <li>AI 情感分析偵測</li>
+          <li>多語言支援</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="sec-divider"></div>
+
+<!-- 06 反思 -->
+<section class="sec" id="s06">
+  <div class="sec-inner">
+    <div class="rv">
+      <span class="sec-label" style="color:#94a3b8;">06 / 06 — Reflection</span>
+      <h2 class="sec-title">設計反思</h2>
+      <p class="sec-sub">跨越 UI/UX 邊界，進入 AI 工程領域後的思考。</p>
+    </div>
+    <div class="reflect-grid rv d1">
+      <div class="reflect-card">
+        <div class="reflect-q">UX 在 AI 對話中扮演什麼角色</div>
+        <div class="reflect-a">訂購流程從 35+ 輪壓縮到 7–10 輪，不是靠 AI 更聰明，而是靠 UX 決策——合併哪些問題、哪些用按鈕取代輸入。技術是工具，對話的資訊架構才是真正的設計工作。</div>
+      </div>
+      <div class="reflect-card">
+        <div class="reflect-q">AI 的不確定性如何影響系統設計</div>
+        <div class="reflect-a">AI 會自我更正、會忘記上下文、會在高並發時不穩定。這些特性讓我必須把「防禦性設計」寫進 Prompt——對話記憶鎖定、禁止自我更正話術，這是 AI 產品特有的挑戰。</div>
+      </div>
+      <div class="reflect-card">
+        <div class="reflect-q">如果重來，我會做什麼不一樣</div>
+        <div class="reflect-a">更早做並發測試，而不是等到朋友測試才發現問題。後台情緒偵測應從第一天就設計成從 Sheets 對話記錄抓取，而不是綁在記憶體，重啟後資料就消失了。</div>
+      </div>
+      <div class="reflect-card">
+        <div class="reflect-q">這個專案對研究方向的影響</div>
+        <div class="reflect-a">實作 RAG 和對話管理後，我對 HCI 研究方向更清晰——AI 系統中的使用者信任、可解釋性、對話介面的資訊架構，是我想繼續深入探索的課題。目標：MIT HCI 2027。</div>
+      </div>
+    </div>
+    <div class="info-bar rv d2">
+      <strong style="color:var(--text);">專案背景</strong>　中原大學 114-2 AI University 實習計畫 × 富堡工業股份有限公司（股票代號 8929，安安 / 安親品牌）。歷時約三個月完成 PoC 階段所有功能，成果發表獲第二名。<br/><br/>
+      <strong style="color:var(--text);">團隊分工</strong>　本專案由三人團隊共同完成，兩位組員負責企業端需求溝通與部分知識庫建置。我（羅亦庭）主導系統架構設計、Flask 後端開發、Dify Chatflow 設計、System Prompt 工程、客服後台 UI 及所有 API 串接工作。
+    </div>
+  </div>
+</section>
+
+<div class="sec-divider"></div>
+<footer><p>© 2026 Yiting Luo 羅亦庭 &nbsp;·&nbsp; All rights reserved.</p></footer>
+
+<script>
+  // ── 節點視覺內容定義 ──
+  const archData = {
+    line: {
+      text: 'LINE Messaging API 是客戶端介面。選擇 LINE 是因為目標用戶本來就在這裡，不需要額外下載 App。<strong>Webhook</strong> 機制讓 LINE 有訊息時主動通知我們的伺服器，不需輪詢。',
+      visual: `<div class="vis-line">
+        <div class="chat-bubble-wrap">
+          <div class="cbubble user">我想幫媽媽買復健褲</div>
+          <div class="cbubble ai">請問媽媽可以自己走路嗎？</div>
+          <div class="cbubble user">可以，輕微漏尿</div>
+          <div class="cbubble ai">好的！推薦安安活力褲 😊</div>
+        </div>
+        <div class="webhook-arrow">↑ Webhook 即時傳遞</div>
+      </div>`
+    },
+    flask: {
+      text: 'Flask 是輕量 Python 框架，負責接收 LINE Webhook、處理訂單邏輯、提供後台介面。<strong>ngrok</strong> 在 PoC 階段幫 Colab 建立固定 HTTPS 網址，正式上線後遷移至 GCP Cloud Run，ngrok 退場。',
+      visual: `<div class="vis-code">
+        <div><span style="color:#94a3b8"># 接收 LINE Webhook</span></div>
+        <div><span style="color:#c4b5fd">@app.route</span>(<span style="color:#4ade80">"/"</span>, methods=[<span style="color:#4ade80">'POST'</span>])</div>
+        <div><span style="color:#c4b5fd">def</span> <span style="color:#7dd3fc">callback</span>():</div>
+        <div>&nbsp;&nbsp;handler.handle(body, signature)</div>
+        <div>&nbsp;&nbsp;<span style="color:#c4b5fd">return</span> <span style="color:#4ade80">'OK'</span></div>
+        <div style="margin-top:0.5rem;color:#94a3b8"># PoC: Colab + ngrok</div>
+        <div style="color:#94a3b8"># 正式: GCP Cloud Run</div>
+      </div>`
+    },
+    dify: {
+      text: 'Dify 提供視覺化 Chatflow，讓六路分流邏輯用拖拉方式設計，<strong>RAG 知識庫</strong>搜尋內建好了。比直接呼叫 LLM API 節省大量開發時間，也讓非工程師可以維護 Prompt。',
+      visual: `<div class="vis-flow">
+        <div style="font-family:var(--font-mono);font-size:0.52rem;color:var(--muted);margin-bottom:0.5rem;letter-spacing:0.1em;text-transform:uppercase;">意圖分流</div>
+        <div class="flow-node" style="background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:#7dd3fc;">客人訊息</div>
+        <div class="flow-arrow">↓ IF/ELSE 判斷</div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+          <div class="flow-node" style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.35);color:#c4b5fd;">推薦</div>
+          <div class="flow-node" style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.35);color:#c4b5fd;">訂購</div>
+          <div class="flow-node" style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.35);color:#c4b5fd;">客訴</div>
+          <div class="flow-node" style="background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);color:rgba(196,181,253,0.5);">+ 3 條</div>
+        </div>
+      </div>`
+    },
+    gemini: {
+      text: 'Gemini 2.5 Flash 是 PoC 階段最省成本的選擇（每百萬 token 約 NT$ 3.8）。已知限制是高並發時速度 <strong>5–12 秒</strong>。正式上線建議升級至 GPT-4o mini（1–3 秒）或 Claude Haiku 3.5（最佳繁中品質）。',
+      visual: `<div class="vis-compare">
+        <div class="cmp-card" style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);">
+          <div class="cmp-label" style="color:#f87171;">現行 PoC</div>
+          <div class="cmp-val" style="color:#f87171;">5–12s</div>
+          <div style="font-family:var(--font-mono);font-size:0.48rem;color:rgba(232,230,244,0.4);margin-top:0.3rem;">Gemini 2.5 Flash</div>
+        </div>
+        <div class="cmp-card" style="background:rgba(6,214,160,0.08);border:1px solid rgba(6,214,160,0.2);">
+          <div class="cmp-label" style="color:var(--accent3);">升級後</div>
+          <div class="cmp-val" style="color:var(--accent3);">1–3s</div>
+          <div style="font-family:var(--font-mono);font-size:0.48rem;color:rgba(232,230,244,0.4);margin-top:0.3rem;">GPT-4o mini</div>
+        </div>
+      </div>`
+    },
+    sheets: {
+      text: 'Google Sheets 是 PoC 階段的輕量資料庫替代方案，免費且客服人員熟悉。<strong>正式上線</strong>會串接 CYBERBIZ 電商系統，訂單直接進電商後台，庫存、出貨、發票一體化，Google Sheets 退場。',
+      visual: `<div class="vis-table">
+        <div class="tbl-head">
+          <div class="tbl-cell">時間</div>
+          <div class="tbl-cell">品項</div>
+          <div class="tbl-cell">狀態</div>
+          <div class="tbl-cell">金額</div>
+        </div>
+        <div class="tbl-row">
+          <div class="tbl-cell">06-10</div>
+          <div class="tbl-cell">活力褲L</div>
+          <div class="tbl-cell" style="color:#4ade80;">已確認</div>
+          <div class="tbl-cell">NT$960</div>
+        </div>
+        <div class="tbl-row">
+          <div class="tbl-cell">06-10</div>
+          <div class="tbl-cell">復健褲M</div>
+          <div class="tbl-cell" style="color:#f87171;">待處理</div>
+          <div class="tbl-cell">待確認</div>
+        </div>
+        <div class="tbl-row">
+          <div class="tbl-cell">06-09</div>
+          <div class="tbl-cell">看護墊</div>
+          <div class="tbl-cell" style="color:#6ee7b7;">已完成</div>
+          <div class="tbl-cell">NT$480</div>
+        </div>
+      </div>`
+    },
+    maps: {
+      text: 'Google Maps Places API 支援 <strong>GPS 定位</strong>（Nearby Search，2km 範圍）和<strong>文字區域查詢</strong>（Text Search）。每月有 $200 USD 免費額度，初期幾乎不需付費。加入 CHANNEL_KEYWORDS 過濾確保只顯示合作通路。',
+      visual: `<div class="vis-map">
+        <div class="map-dot" style="top:40%;left:50%;transform:translate(-50%,-50%);z-index:2;"></div>
+        <div class="map-pulse" style="top:40%;left:50%;"></div>
+        <div class="map-label" style="top:20%;left:55%;">杏一藥局 · 320m</div>
+        <div class="map-label" style="top:55%;left:20%;">全聯 · 650m</div>
+        <div class="map-label" style="top:70%;left:55%;">大樹藥局 · 980m</div>
+        <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 40%, rgba(245,158,11,0.12), transparent 70%);pointer-events:none;"></div>
+      </div>`
+    }
+  };
+
+  // ── 架構圖點擊 ──
+  const archNodes = document.querySelectorAll('.arch-node');
+  const archSwitchText = document.getElementById('arch-switch-text');
+  const archSwitchVisual = document.getElementById('arch-switch-visual');
+  archNodes.forEach(node => {
+    node.addEventListener('click', () => {
+      archNodes.forEach(n => n.classList.remove('active'));
+      node.classList.add('active');
+      const key = node.dataset.key;
+      const d = archData[key];
+      if (!d) return;
+      archSwitchText.innerHTML = d.text;
+      archSwitchVisual.innerHTML = d.visual;
+    });
+  });
+
+  // ── 打字機 ──
+  const titleEl = document.getElementById('typed-title');
+  const cursorEl = document.getElementById('cursor');
+  let charIdx = 0;
+  const full = 'LINE AI\n智能客服系統';
+  function typeChar() {
+    if (charIdx < full.length) {
+      titleEl.innerHTML += full[charIdx] === '\n' ? '<br/>' : full[charIdx];
+      charIdx++;
+      setTimeout(typeChar, charIdx < 8 ? 80 : 55);
+    } else {
+      setTimeout(() => { cursorEl.style.display='none'; }, 1200);
+      document.getElementById('hero-sub').style.opacity = '1';
+      document.getElementById('hero-chips').style.opacity = '1';
+      document.getElementById('hero-scroll').style.opacity = '1';
+    }
+  }
+  setTimeout(typeChar, 500);
+
+  // ── 數字滾動 ──
+  function animateNum(el) {
+    const target = parseInt(el.dataset.target);
+    const start = parseInt(el.textContent);
+    const suffix = el.dataset.suffix || '';
+    const t0 = Date.now();
+    function tick() {
+      const p = Math.min((Date.now()-t0)/1200, 1);
+      const e = 1-Math.pow(1-p,3);
+      el.textContent = Math.round(start+(target-start)*e) + suffix;
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // ── 功能卡 ──
+  function toggleFeat(el) {
+    const was = el.classList.contains('open');
+    document.querySelectorAll('.feat-card').forEach(c=>c.classList.remove('open'));
+    if (!was) el.classList.add('open');
+  }
+
+  // ── 成本計算 ──
+  function updateCost(v) {
+    document.getElementById('slider-val').textContent = v;
+    const t = v*15*30*5000;
+    const i = t*.8, o = t*.2;
+    document.getElementById('cost-gemini').textContent = 'NT$ '+(Math.round(i/1e6*2.4+o/1e6*9.6)).toLocaleString();
+    document.getElementById('cost-gpt').textContent = 'NT$ '+(Math.round(i/1e6*4.8+o/1e6*19.2)).toLocaleString();
+    document.getElementById('cost-claude').textContent = 'NT$ '+(Math.round(i/1e6*9.6+o/1e6*48)).toLocaleString();
+  }
+
+  // ── Side Nav ──
+  const sideItems = document.querySelectorAll('.side-item');
+  const secEls = ['s01','s02','s03','s04','s05','s06'].map(id=>document.getElementById(id));
+  function updateSide() {
+    const mid = window.scrollY+window.innerHeight*.4;
+    secEls.forEach((s,i)=>{ if(s) sideItems[i].classList.toggle('active', mid>=s.offsetTop && mid<s.offsetTop+s.offsetHeight); });
+  }
+  window.addEventListener('scroll', updateSide, {passive:true});
+  updateSide();
+
+  // ── Reveal ──
+  const rvEls = document.querySelectorAll('.rv');
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target);} });
+  }, {threshold:0.06, rootMargin:'0px 0px -40px 0px'});
+  rvEls.forEach(el=>obs.observe(el));
+
+  const numObs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){animateNum(e.target);numObs.unobserve(e.target);} });
+  }, {threshold:0.3});
+  document.querySelectorAll('[data-target]').forEach(el=>numObs.observe(el));
+
+  const pFill = document.getElementById('progress-fill');
+  if(pFill) {
+    const pObs = new IntersectionObserver(entries=>{
+      entries.forEach(e=>{ if(e.isIntersecting){setTimeout(()=>{pFill.style.width='33%';},300);pObs.disconnect();} });
+    },{threshold:0.3});
+    pObs.observe(pFill.parentElement);
+  }
+</script>
+</body>
+</html>
